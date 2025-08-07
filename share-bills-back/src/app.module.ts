@@ -7,6 +7,8 @@ import { ExpensesModule } from './modules/expenses/expenses.module';
 import { GroupsModule } from './modules/groups/groups.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
+import { AuthModule } from './modules/auth-module/auth.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -28,8 +30,10 @@ import { ConfigService } from '@nestjs/config';
     UsersModule,
     ExpensesModule,
     GroupsModule,
+    AuthModule,
+    ThrottlerModule.forRoot(),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, {provide: 'APP_GUARD', useClass: ThrottlerGuard}],
 })
 export class AppModule {}

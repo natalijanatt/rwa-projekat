@@ -1,40 +1,43 @@
-import { User } from 'src/modules/users/user.entity';
 import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  ManyToOne,
-  OneToMany,
-  JoinColumn,
+  Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, OneToMany, JoinColumn, Index, Check,
 } from 'typeorm';
+import { User } from '../users/user.entity';
 import { GroupMember } from '../group-members/group-members.entity';
-import { Expense } from 'src/modules/expenses/expense.entity';
+import { GroupMessage } from '../group-messages/group-messages.entity';
+import { Expense } from '../expenses/expense.entity';
 
+@Check(`(is_deleted AND deleted_at IS NOT NULL) OR (NOT is_deleted AND deleted_at IS NULL)`)
 @Entity('groups')
 export class Group {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ length: 150 })
   name: string;
 
-  @ManyToOne(() => User, user => user.groups, { onDelete: 'RESTRICT' })
+  @Index()
+  @Column({ name: 'owner_id' })
+  ownerId: number;
+
+  @ManyToOne(() => User, (u) => u.groupsOwned, { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'owner_id' })
   owner: User;
 
-  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz', default: () => 'NOW()' })
   createdAt: Date;
 
-  @Column({ type: 'timestamptz', name: 'deleted_at', nullable: true })
+  @Column({ name: 'deleted_at', type: 'timestamptz', nullable: true })
   deletedAt: Date | null;
 
-  @Column({ type: 'boolean', name: 'is_deleted', default: false })
+  @Column({ name: 'is_deleted', type: 'boolean', default: false })
   isDeleted: boolean;
 
-  @OneToMany(() => GroupMember, member => member.group)
+  @OneToMany(() => GroupMember, (gm) => gm.group)
   members: GroupMember[];
 
-  @OneToMany(() => Expense, expense => expense.group)
+  @OneToMany(() => GroupMessage, (m) => m.group)
+  messages: GroupMessage[];
+
+  @OneToMany(() => Expense, (e) => e.group)
   expenses: Expense[];
 }

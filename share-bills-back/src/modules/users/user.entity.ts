@@ -1,41 +1,29 @@
-import { Expense } from 'src/modules/expenses/expense.entity';
-import { ExpenseShare } from 'src/modules/expense-shares/expense-shares.entity';
-import { Group } from 'src/modules/groups/group.entity';
-import { GroupMember } from '../group-members/group-members.entity';
 import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  OneToMany,
+  Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany
 } from 'typeorm';
+import { Group } from '../groups/group.entity';
+import { GroupMember } from '../group-members/group-members.entity';
 
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ length: 100 })
   name: string;
- 
-  @Column({ type: 'varchar', length: 255, unique: true })
+
+  @Column({ length: 255 })
   email: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  password: string;
+  @Column({ name: 'password_hash', length: 255 })
+  passwordHash: string;
 
-  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz', default: () => 'NOW()' })
   createdAt: Date;
 
-  @OneToMany(() => Group, group => group.owner)
-  groups: Group[];
+  @OneToMany(() => Group, (g) => g.owner)
+  groupsOwned: Group[];
 
-  @OneToMany(() => GroupMember, member => member.user)
-  groupMembers: GroupMember[];
-
-  @OneToMany(() => Expense, expense => expense.paidBy)
-  expensesPaid: Expense[];
-
-  @OneToMany(() => ExpenseShare, share => share.user)
-  expenseShares: ExpenseShare[];
+  @OneToMany(() => GroupMember, (gm) => gm.user)
+  memberships: GroupMember[];
 }
