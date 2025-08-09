@@ -22,7 +22,7 @@ export class UsersService {
     return safe;
   }
 
-  async findOne(id: number): Promise<FullUserDto | null> {
+  async findOne(id: number): Promise<User| null> {
     const user: User | null = await this.repo
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.groupsOwned', 'groupsOwned')
@@ -32,7 +32,7 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
-    return new FullUserDto(user);
+    return user;
   }
 
   async create(user: CreateUserDto): Promise<FullUserDto> {

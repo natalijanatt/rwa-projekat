@@ -14,10 +14,10 @@ import {
 import type { Request } from 'express';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { FullUserDto } from './dto/full-user.dto';
 import { BaseUserDto } from './dto/base-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { User } from './user.entity';
 
 @Controller('users')
 export class UsersController {
@@ -31,7 +31,7 @@ export class UsersController {
   @Get('profile')
   async getOne(
     @Req() req: Request & { user?: { userId: number } },
-  ): Promise<FullUserDto | null> {
+  ): Promise<User | null> {
     const userId = req.user?.userId;
     if (!userId || isNaN(Number(userId))) {
       throw new BadRequestException('Invalid or missing user id in JWT');

@@ -3,7 +3,6 @@ import {
 } from 'typeorm';
 import { Group } from '../groups/group.entity';
 import { GroupMember } from '../group-members/group-members.entity';
-import { ExpenseShare } from '../expense-shares/expense-shares.entity';
 import { ExpenseParticipant } from '../expense-participants/expense-participants.entity';
 
 export enum TxnType {
@@ -58,9 +57,6 @@ export class Expense {
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz', default: () => 'NOW()' })
   createdAt: Date;
-
-  @OneToMany(() => ExpenseShare, (s) => s.expense)
-  shares: ExpenseShare[];
 
   @OneToMany(() => ExpenseParticipant, (p) => p.expense)
   participants: ExpenseParticipant[];

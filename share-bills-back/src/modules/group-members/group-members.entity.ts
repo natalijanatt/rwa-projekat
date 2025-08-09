@@ -5,7 +5,6 @@ import { Group } from '../groups/group.entity';
 import { User } from '../users/user.entity';
 import { GroupMessage } from '../group-messages/group-messages.entity';
 import { Expense } from '../expenses/expense.entity';
-import { ExpenseShare } from '../expense-shares/expense-shares.entity';
 import { ExpenseParticipant } from '../expense-participants/expense-participants.entity';
 
 @Unique(['groupId', 'userId'])
@@ -49,12 +48,6 @@ export class GroupMember {
 
   @OneToMany(() => Expense, (e) => e.paidTo)
   expensesPaidTo: Expense[];
-
-  @OneToMany(() => ExpenseShare, (s) => s.member)
-  sharesAsDebtor: ExpenseShare[];
-
-  @OneToMany(() => ExpenseShare, (s) => s.owedTo)
-  sharesAsCreditor: ExpenseShare[];
 
   @OneToMany(() => ExpenseParticipant, (p) => p.invitedBy)
   participations: ExpenseParticipant[];
