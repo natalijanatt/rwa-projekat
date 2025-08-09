@@ -25,10 +25,8 @@ export class UsersService {
   async findOne(id: number): Promise<FullUserDto | null> {
     const user: User | null = await this.repo
       .createQueryBuilder('user')
-      .leftJoinAndSelect('user.groups', 'groups')
-      // .leftJoinAndSelect('user.groupMembers', 'groupMembers')
-      .leftJoinAndSelect('user.expensesPaid', 'expensesPaid')
-      .leftJoinAndSelect('user.expenseShares', 'expenseShares')
+      .leftJoinAndSelect('user.groupsOwned', 'groupsOwned')
+      .leftJoinAndSelect('user.memberships', 'memberships')
       .where('user.id = :id', { id })
       .getOne();
     if (!user) {
