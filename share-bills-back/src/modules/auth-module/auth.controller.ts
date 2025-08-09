@@ -20,7 +20,7 @@ export class AuthController {
       loginDto.password,
     );
     if (!user) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException("Invalid credentials");
     }
     return this.authService.login(user);
   }

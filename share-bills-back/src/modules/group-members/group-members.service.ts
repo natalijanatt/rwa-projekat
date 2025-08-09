@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GroupMember } from './group-members.entity';
 import { Repository } from 'typeorm';
+import { BaseGroupMemberDto } from './dto/BaseGroupMember.dto';
 
 @Injectable()
 export class GroupMembersService {
@@ -23,12 +24,13 @@ export class GroupMembersService {
         return this.repo.save(newMember);
     }
 
-    // async update(id: number, data: UpdateGroupMemberDto): Promise<GroupMember | null> {
-    //     const member = await this.findOne(id);
-    //     if (!member) return null;
-    //     this.repo.merge(member, data);
-    //     return this.repo.save(member);
-    // }
+    async getMembers(groupId: number): Promise<BaseGroupMemberDto[]> {
+        const groupMembers = await this.repo.createQueryBuilder('group_member')
+            .leftJoinAndSelect('group_member.user', 'user')
+            .where('group_member.groupId = :groupId', { groupId })
+            .getMany();
+        return groupMembers.map(member => new BaseGroupMemberDto(member));
+    }
 
     async delete(id: number): Promise<void> {
         await this.repo.delete(id);

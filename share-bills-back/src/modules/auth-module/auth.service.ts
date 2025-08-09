@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -23,7 +23,7 @@ export class AuthService {
     const user = await this.usersService.findByEmail(email);
 
     if (!user || !user.password) {
-      throw new Error('Invalid credentials');
+      throw new BadRequestException('Invalid credentials');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -33,7 +33,7 @@ export class AuthService {
       return result;
     }
 
-   throw new Error('Incorrect password');
+   throw new BadRequestException('Incorrect password');
   }
   login(user: Partial<FullUserDto>): { access_token: string } {
     const payload = { email: user.email, sub: user.id };

@@ -5,13 +5,16 @@ import { Repository } from 'typeorm';
 import { BaseGroupDto } from './dto/base-group.dto';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { GroupMembersService } from '../group-members/group-members.service';
+import { GroupMember } from '../group-members/group-members.entity';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class GroupsService {
     constructor(
         @InjectRepository(Group)
         private readonly repo: Repository<Group>,
-        private readonly groupMembersService: GroupMembersService
+        private readonly groupMembersService: GroupMembersService,
+        private readonly userService: UsersService, 
     ) {}
 
     async findAll(memberId: number): Promise<BaseGroupDto[]> {
@@ -36,6 +39,14 @@ export class GroupsService {
         return !!group;
     }
 
+    async checkOwnership(userId: number, groupId: number): Promise<boolean> {
+        const group = await this.repo.findOne({
+            where: { id: groupId, ownerId: userId },
+        });
+
+        return !!group;
+    }
+
     async create(data: CreateGroupDto, userId: number): Promise<Group> {
         const newGroup = this.repo.create(data);
         newGroup.ownerId = userId;
@@ -44,6 +55,21 @@ export class GroupsService {
         return newGroup;
     }
 
+    async addMemberToGroup(groupId: number, userId: number): Promise<GroupMember> {
+        const group = await this.repo.findOne({
+            where: { id: groupId },
+            relations: ['members'],
+        });
+        if (!group) throw new Error('Group not found');
+
+        const user = await this.userService.findOne(userId);
+        if (!user) throw new Error('User not found');
+
+        return this.groupMembersService.addMemberToGroup(groupId, userId);
+    }
+
+    
+
     // async update(id: number, data: UpdateGroupDto): Promise<Group | null> {
     //     const group = await this.findOne(id);
     //     if (!group) return null;
@@ -51,7 +77,4 @@ export class GroupsService {
     //     return this.repo.save(group);
     // }
 
-    // async delete(id: number): Promise<void> {
-    //     await this.repo.delete(id);
-    // }
 }
