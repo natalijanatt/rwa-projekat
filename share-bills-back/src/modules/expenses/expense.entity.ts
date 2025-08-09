@@ -58,6 +58,12 @@ export class Expense {
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz', default: () => 'NOW()' })
   createdAt: Date;
 
+  @Column({ name: 'acceptance_deadline', type: 'timestamptz', nullable: false, default: () => 'NOW() + INTERVAL \'5 MINUTE\'' })
+  acceptanceDeadline: Date;
+
+  @Column({ name: 'finalized_at', type: 'timestamptz', nullable: true })
+  finalizedAt: Date | null;
+
   @OneToMany(() => ExpenseParticipant, (p) => p.expense)
   participants: ExpenseParticipant[];
 }

@@ -11,6 +11,7 @@ import { GroupMembersModule } from './modules/group-members/group-members.module
 import { ExpenseParticipantsController } from './modules/expense-participants/expense-participants.controller';
 import { ExpenseParticipantsModule } from './modules/expense-participants/expense-participants.module';
 import { GroupsModule } from './modules/groups/groups.module';
+import { GroupMembersBalanceModule } from './modules/group-members-balance/group-members-balance.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { GroupsModule } from './modules/groups/groups.module';
     GroupMembersModule,
     ExpenseParticipantsModule,
     GroupsModule,
+    GroupMembersBalanceModule,
   ],
   controllers: [AppController, ExpenseParticipantsController],
   providers: [AppService, {provide: 'APP_GUARD', useClass: ThrottlerGuard}],

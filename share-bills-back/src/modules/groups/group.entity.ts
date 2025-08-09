@@ -5,6 +5,7 @@ import { User } from '../users/user.entity';
 import { GroupMember } from '../group-members/group-members.entity';
 import { GroupMessage } from '../group-messages/group-messages.entity';
 import { Expense } from '../expenses/expense.entity';
+import { GroupMemberBalance } from '../group-members-balance/group-members-balance.entity';
 
 @Check(`(is_deleted AND deleted_at IS NOT NULL) OR (NOT is_deleted AND deleted_at IS NULL)`)
 @Entity('groups')
@@ -40,4 +41,7 @@ export class Group {
 
   @OneToMany(() => Expense, (e) => e.group)
   expenses: Expense[];
+
+  @OneToMany(() => GroupMemberBalance, (b) => b.group)
+  balances: GroupMemberBalance[];
 }
