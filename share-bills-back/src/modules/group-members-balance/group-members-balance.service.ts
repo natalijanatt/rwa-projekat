@@ -10,43 +10,63 @@ export class GroupMembersBalanceService {
     private readonly repo: Repository<GroupMemberBalance>,
   ) {}
 
-  async expenseBalance(
-    expenseId: number,
-    share: number,
-    paidById: number,
-    groupId: number,
-  ) {
-    const qb = this.repo.createQueryBuilder(); // group_member_balances repo
+async expenseBalance(
+  expenseId: number,
+  share: number,
+  paidById: number,
+  groupId: number,
+  acceptedRows:{memberId: number}[]
+) {
 
-    const acceptedSub = qb
-      .subQuery()
-      .select('p.member_id')
-      .from('expense_participants', 'p')
-      .where('p.expense_id = :expenseId', { expenseId })
-      .andWhere(`p.status = 'accepted'`)
-      .andWhere('p.member_id <> :paidById', { paidById })
-      .getQuery();
+  const memberIds = acceptedRows.map(row => row.memberId);
+  // 1) others -> payer += share
+  const res1 = await this.repo
+    .createQueryBuilder()
+    .update()
+    .set({ balance: () => `balance + :share` })
+    .where('group_id = :groupId', { groupId })
+    .andWhere('to_member_id = :paidById', { paidById })
+    .andWhere('from_member_id IN (:...memberIds)', { memberIds })
+    .setParameters({ share })
+    .execute();
 
-    // 1) others -> payer += share
-    await this.repo
-      .createQueryBuilder()
-      .update()
-      .set({ balance: () => `balance + :share` })
-      .where('group_id = :groupId', { groupId })
-      .andWhere('to_member_id = :paidById', { paidById })
-      .andWhere(`from_member_id IN ${acceptedSub}`)
-      .setParameters({ share, expenseId, paidById })
-      .execute();
+  // 2) payer -> others -= share
+  const res2 = await this.repo
+    .createQueryBuilder()
+    .update()
+    .set({ balance: () => `balance - :share` })
+    .where('group_id = :groupId', { groupId })
+    .andWhere('from_member_id = :paidById', { paidById })
+    .andWhere('to_member_id IN (:...memberIds)', { memberIds })
+    .setParameters({ share })
+    .execute();
 
-    // 2) payer -> others -= share
+  return { affected1: res1.affected ?? 0, affected2: res2.affected ?? 0 };
+}
+
+
+  async transferBalance(expenseId: number, share: number, paidById: number, paidToId: number, groupId: number) {
+    // 1) payer -> receiver -= share
     await this.repo
       .createQueryBuilder()
       .update()
       .set({ balance: () => `balance - :share` })
-      .where('group_id = :groupId', { groupId })
-      .andWhere('from_member_id = :paidById', { paidById })
-      .andWhere(`to_member_id IN ${acceptedSub}`)
-      .setParameters({ share, expenseId, paidById })
+      .where('from_member_id = :paidById', { paidById })
+      .andWhere('to_member_id = :paidToId', { paidToId })
+      .andWhere('group_id = :groupId', { groupId })
+      .setParameters({ share, expenseId, paidById, paidToId, groupId })
+      .execute();
+
+
+    // 2) receiver -> payer += share
+    await this.repo
+      .createQueryBuilder()
+      .update()
+      .set({ balance: () => `balance + :share` })
+      .where('from_member_id = :paidToId', { paidToId })
+      .andWhere('to_member_id = :paidById', { paidById })
+      .andWhere('group_id = :groupId', { expenseId })
+      .setParameters({ share, expenseId, paidById, paidToId, groupId })
       .execute();
   }
 }

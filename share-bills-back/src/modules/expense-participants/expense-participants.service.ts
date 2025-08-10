@@ -1,14 +1,18 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ExpenseParticipant } from './expense-participants.entity';
+import {
+  ExpenseParticipant,
+  ParticipantStatus,
+} from './expense-participants.entity';
 
-import { from, interval, switchMap, timer } from 'rxjs';
+import { from, switchMap, timer } from 'rxjs';
 import { map, takeWhile } from 'rxjs/operators';
 import { ExpensesService } from '../expenses/expenses.service';
 import { Expense } from '../expenses/expense.entity';
-import { DataSource } from 'typeorm';
-import e from 'express';
+import { GroupMembersBalanceService } from '../group-members-balance/group-members-balance.service';
+import { GroupMemberBalance } from '../group-members-balance/group-members-balance.entity';
+import { ExpenseFinalizerService } from '../expenses/expense.finalizer.service';
 
 @Injectable()
 export class ExpenseParticipantsService {
@@ -16,107 +20,198 @@ export class ExpenseParticipantsService {
     @InjectRepository(ExpenseParticipant)
     private readonly repo: Repository<ExpenseParticipant>,
     private readonly expenseService: ExpensesService,
-    private readonly ds: DataSource,
+    private readonly groupMembersBalanceService: GroupMembersBalanceService,
+    @InjectRepository(Expense)
+    private readonly expenseRepo: Repository<Expense>,
+    @InjectRepository(GroupMemberBalance)
+    private readonly balanceRepo: Repository<GroupMemberBalance>,
+    private readonly finalizer: ExpenseFinalizerService,
   ) {}
 
   countdown(expenseId: number) {
-  return timer(0, 1000).pipe(
-    switchMap(() => from(this.expenseService.findOne(expenseId))),
-    map((expense: Expense | null) => {
-      if (!expense) return { data: { msLeft: 0, finalized: true } };
+    return timer(0, 1000).pipe(
+      switchMap(() => from(this.expenseService.findOne(expenseId))),
+      map((expense: Expense | null) => {
+        if (!expense) return { data: { msLeft: 0, finalized: true } };
 
-      // acceptanceDeadline can be Date or string; both work with new Date(...)
-      const deadlineMs = new Date(expense.acceptanceDeadline).getTime();
-      const msLeft = Math.max(0, deadlineMs - Date.now());
+        // acceptanceDeadline can be Date or string; both work with new Date(...)
+        const deadlineMs = new Date(expense.acceptanceDeadline).getTime();
+        const msLeft = Math.max(0, deadlineMs - Date.now());
 
-      const finalized =
-        Boolean(expense.finalizedAt) || msLeft <= 0;
+        const finalized = Boolean(expense.finalizedAt) || msLeft <= 0;
 
-      return { data: { msLeft, finalized } } as {
-        data: { msLeft: number; finalized: boolean };
-      };
-    }),
-    takeWhile(evt => !evt.data.finalized, true),
-  );
-}
-
+        return { data: { msLeft, finalized } } as {
+          data: { msLeft: number; finalized: boolean };
+        };
+      }),
+      takeWhile((evt) => !evt.data.finalized, true),
+    );
+  }
 
   async respond(
     expenseId: number,
     memberId: number,
-    status: 'accepted' | 'declined',
+    status: ParticipantStatus,
   ) {
-    return this.ds.transaction(
-      'READ COMMITTED',
-      async (transactionalEntityManager) => {
-        const expArr: Expense[] = await transactionalEntityManager.query(
-          `SELECT id, group_id, txn_type, amount, paid_by_id, acceptance_deadline, finalized_at
-           FROM expenses
-          WHERE id = $1
-          FOR UPDATE`,
-          [expenseId],
-        );
-        const exp = expArr[0];
-        if (!exp) throw new BadRequestException('Expense not found');
-        if (exp.finalizedAt) return { finalized: true, expenseId };
+    return this.repo.manager.transaction(async (manager) => {
+      const expenseRepo = manager.getRepository(Expense);
+      const participantRepo = manager.getRepository(ExpenseParticipant);
+      // Lock the expense row for the duration of this tx
+      const exp = await expenseRepo
+        .createQueryBuilder('e')
+        .setLock('pessimistic_write') // FOR UPDATE
+        .where('e.id = :expenseId', { expenseId })
+        .getOne();
 
-        //Update the participant's status if it is still pending
-        await transactionalEntityManager.query(
-          `UPDATE expense_participants
-            SET status = $1, responded_at = now()
-          WHERE expense_id = $2 AND member_id = $3 AND status = 'pending'`,
-          [status, expenseId, memberId],
-        );
+      if (!exp) {
+        throw new BadRequestException('Expense not found');
+      }
 
-        const result: { pending: number }[] =
-          await transactionalEntityManager.query(
-            `SELECT COUNT(*)::int AS pending
-         FROM expense_participants
-         WHERE expense_id = $1 AND status = 'pending'`,
-            [expenseId],
-          );
-        const pending = result[0]?.pending ?? 0;
+      if (exp.finalizedAt) {
+        return { finalized: true, expenseId };
+      }
 
-        if (pending > 0) {
-          return { finalized: false, expenseId };
-        }
+      // Update this participant’s response
+      await participantRepo
+        .createQueryBuilder()
+        .update(ExpenseParticipant)
+        .set({ status, respondedAt: () => 'now()' })
+        .where('expense_id = :expenseId', { expenseId })
+        .andWhere('member_id = :memberId', { memberId })
+        .execute();
 
-        if (exp.txnType.toString() === 'expense') {
-          const n: { pending: number }[] =
-            await transactionalEntityManager.query(
-              `SELECT COUNT(*)::int AS n
-             FROM expense_participants
-            WHERE expense_id = $1 AND status = 'accepted'`,
-              [expenseId],
-            );
-          const accepted = n[0]?.pending ?? 0;
-          if (accepted === 0) {
-            throw new BadRequestException(
-              'No participants accepted the expense',
-            );
-          }
-          if (accepted > 1) {
-            const splitAmount = exp.amount / accepted;
-            //delete later
-            console.log('Finishing expense', splitAmount, accepted);
-          }
-          //! finish the expense
-        } else if (exp.txnType.toString() === 'transfer') {
-          await transactionalEntityManager.query(
-            `UPDATE group_member_balances b
-              SET balance = b.balance - $1
-            WHERE b.group_id = $2
-              AND b.from_member_id = (SELECT paid_to   FROM expenses WHERE id = $3)
-              AND b.to_member_id   = (SELECT paid_by_id FROM expenses WHERE id = $3)`,
-            [exp.amount, exp.groupId, expenseId],
+      // Any pending left?
+      const pending = await participantRepo
+        .createQueryBuilder('p')
+        .where('p.expense_id = :expenseId', { expenseId })
+        .andWhere('p.status = :status', { status: 'pending' })
+        .getCount();
+
+      if (pending > 0) {
+        return { finalized: false, expenseId };
+      }
+
+      // Everyone responded – finalize based on type
+      if (String(exp.txnType) === 'expense') {
+        // Count accepted participants (optionally exclude payer)
+        const acceptedRows: { memberId: number }[] = await participantRepo
+          .createQueryBuilder('p')
+          .select('p.member_id', 'memberId')
+          .where('p.expense_id = :expenseId', { expenseId })
+          .andWhere('p.status = :status', { status: 'accepted' })
+          // If payer should not count toward split, exclude them:
+          .andWhere('p.member_id <> :payerId', { payerId: exp.paidById })
+          .getRawMany();
+
+        const accepted = acceptedRows.length;
+
+        if (accepted === 0) {
+          throw new BadRequestException(
+            'No participants (excluding payer) accepted the expense',
           );
         }
-        await transactionalEntityManager.query(`UPDATE expenses SET finalized_at = now() WHERE id = $1`, [expenseId]);
 
-        //! this.gateway.notifyFinalized(exp.group_id, expenseId);
+        const share = Number((Number(exp.amount) / (accepted + 1)).toFixed(2));
 
-        return { finalized: true, expenseId, groupId: exp.groupId };
-      },
-    );
+        // Use services that operate within the same tx if they run queries;
+        // pass manager/queryRunner through if needed.
+        await this.groupMembersBalanceService.expenseBalance(
+          expenseId,
+          share,
+          exp.paidById,
+          exp.groupId,
+          acceptedRows,
+        );
+      }
+
+      await expenseRepo.update({ id: expenseId }, { finalizedAt: new Date() });
+      return { finalized: true, expenseId, groupId: exp.groupId };
+    });
+  }
+
+  async finalizeIfExpired(expenseId: number, opts?: { force?: boolean }) {
+    const { force = false } = opts ?? {};
+
+    return this.repo.manager.transaction(async (manager) => {
+      const expenseRepo = manager.getRepository(Expense);
+      const participantRepo = manager.getRepository(ExpenseParticipant);
+
+      // Lock the expense row for the duration of the tx
+      const exp = await expenseRepo
+        .createQueryBuilder('e')
+        .setLock('pessimistic_write') // FOR UPDATE
+        .where('e.id = :expenseId', { expenseId })
+        .getOne();
+
+      if (!exp) throw new BadRequestException('Expense not found');
+
+      // Already finalized? nothing to do
+      if (exp.finalizedAt)
+        return {
+          finalized: true,
+          expenseId: exp.id,
+          groupId: exp.groupId,
+          alreadyFinalized: true,
+        };
+
+      const now = new Date();
+      const deadline = new Date(exp.acceptanceDeadline);
+
+      // If not forced and not yet past deadline, bail
+      if (!force && now < deadline) {
+        return {
+          finalized: false,
+          reason: 'not_expired_yet',
+          expenseId: exp.id,
+        };
+      }
+
+      // 1) pending -> declined
+      await participantRepo
+        .createQueryBuilder()
+        .update(ExpenseParticipant)
+        .set({ status: ParticipantStatus.Declined, respondedAt: () => 'now()' })
+        .where('expense_id = :expenseId', { expenseId: exp.id })
+        .andWhere('status = :pending', { pending: ParticipantStatus.Pending })
+        .execute();
+
+      // 2) compute accepted participants (excluding payer if split should not include them)
+      const acceptedRows: { memberId: number }[] = await participantRepo
+        .createQueryBuilder('p')
+        .select('p.member_id', 'memberId')
+        .where('p.expense_id = :expenseId', { expenseId: exp.id })
+        .andWhere('p.status = :status', { status: ParticipantStatus.Accepted })
+        .andWhere('p.member_id <> :payerId', { payerId: exp.paidById })
+        .getRawMany();
+
+      const acceptedIds = acceptedRows.map((r) => r.memberId);
+      const acceptedCount = acceptedIds.length;
+
+      // 3) settle balances only if there is at least one accept
+      if (String(exp.txnType) === 'expense' && acceptedCount > 0) {
+        // base share for each participant including payer
+        const share = Number(
+          (Number(exp.amount) / (acceptedCount + 1)).toFixed(2),
+        );
+
+        await this.groupMembersBalanceService.expenseBalance(
+          exp.id,
+          share,
+          exp.paidById,
+          exp.groupId,
+          acceptedRows, // make sure expenseBalance expects number[]
+        );
+      }
+
+      // 4) finalize
+      await expenseRepo.update({ id: exp.id }, { finalizedAt: now });
+      this.finalizer?.cancel(expenseId);
+      return {
+        finalized: true,
+        expenseId: exp.id,
+        groupId: exp.groupId,
+        acceptedCount,
+      };
+    });
   }
 }

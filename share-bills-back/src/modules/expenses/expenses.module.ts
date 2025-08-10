@@ -11,11 +11,14 @@ import { Group } from '../groups/group.entity';
 import { GroupMembersService } from '../group-members/group-members.service';
 import { User } from '../users/user.entity';
 import { UsersService } from '../users/users.service';
+import { GroupMemberBalance } from '../group-members-balance/group-members-balance.entity';
+import { GroupMembersBalanceService } from '../group-members-balance/group-members-balance.service';
+import { ExpenseFinalizerService } from './expense.finalizer.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Expense, ExpenseParticipant, GroupMember, Group, User])],
+  imports: [TypeOrmModule.forFeature([Expense, ExpenseParticipant, GroupMember, Group, User, GroupMemberBalance])],
   controllers: [ExpensesController],
-  providers: [ExpensesService, ExpenseParticipantsService, GroupsService, GroupMembersService, UsersService],
-  exports: [ExpensesService, ExpenseParticipantsService]
+  providers: [ExpensesService, ExpenseParticipantsService, GroupsService, GroupMembersService, UsersService, GroupMembersBalanceService, ExpenseFinalizerService],
+  exports: [ExpensesService, ExpenseParticipantsService, ExpenseFinalizerService]
 })
 export class ExpensesModule {}

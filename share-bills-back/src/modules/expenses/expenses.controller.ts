@@ -17,8 +17,9 @@ import { CreateExpenseDto } from './dto/create-expense.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { GroupsService } from '../groups/groups.service';
 import { GroupMembersService } from '../group-members/group-members.service';
+import { ParticipantStatus } from '../expense-participants/expense-participants.entity';
 
-type RespondDto = { status: 'accepted' | 'declined' };
+type RespondDto = { status: ParticipantStatus };
 
 @Controller('expenses')
 export class ExpensesController {
@@ -60,7 +61,7 @@ countdown(@Param('expenseId', ParseIntPipe) expenseId: number) {
     @Param('memberId', ParseIntPipe) memberId: number,
     @Body() dto: RespondDto,
   ) {
-    if (dto.status !== 'accepted' && dto.status !== 'declined') {
+    if (dto.status.toString() !== 'accepted' && dto.status.toString() !== 'declined') {
       throw new BadRequestException('status must be accepted|declined');
     }
     return this.expenseParticipantsService.respond(
