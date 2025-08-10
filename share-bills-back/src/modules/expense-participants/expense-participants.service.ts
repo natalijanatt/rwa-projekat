@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ExpenseParticipant } from './expense-participants.entity';
 
-import { from, interval, switchMap } from 'rxjs';
+import { from, interval, switchMap, timer } from 'rxjs';
 import { map, takeWhile } from 'rxjs/operators';
 import { ExpensesService } from '../expenses/expenses.service';
 import { Expense } from '../expenses/expense.entity';
@@ -20,24 +20,26 @@ export class ExpenseParticipantsService {
   ) {}
 
   countdown(expenseId: number) {
-    return interval(1000).pipe(
-      switchMap(() => from(this.expenseService.findOne(expenseId))),
-      map((expense: Expense | null) => {
-        if (expense) {
-          const deadlineMs = new Date(
-            expense.acceptanceDeadline.toDateString(),
-          ).getTime();
-          const msLeft = Math.max(0, deadlineMs - Date.now());
-          const finalized = !!expense.finalizedAt || msLeft === 0;
-          return { data: { msLeft, finalized } } as {
-            data: { msLeft: number; finalized: boolean };
-          };
-        }
-        return { data: { msLeft: 0, finalized: true } };
-      }),
-      takeWhile((evt) => !evt.data.finalized, true),
-    );
-  }
+  return timer(0, 1000).pipe(
+    switchMap(() => from(this.expenseService.findOne(expenseId))),
+    map((expense: Expense | null) => {
+      if (!expense) return { data: { msLeft: 0, finalized: true } };
+
+      // acceptanceDeadline can be Date or string; both work with new Date(...)
+      const deadlineMs = new Date(expense.acceptanceDeadline).getTime();
+      const msLeft = Math.max(0, deadlineMs - Date.now());
+
+      const finalized =
+        Boolean(expense.finalizedAt) || msLeft <= 0;
+
+      return { data: { msLeft, finalized } } as {
+        data: { msLeft: number; finalized: boolean };
+      };
+    }),
+    takeWhile(evt => !evt.data.finalized, true),
+  );
+}
+
 
   async respond(
     expenseId: number,

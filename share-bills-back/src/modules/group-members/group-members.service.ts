@@ -32,6 +32,12 @@ export class GroupMembersService {
         return groupMembers.map(member => new BaseGroupMemberDto(member));
     }
 
+    async getMemberByUserId(groupId: number, userId: number): Promise<GroupMember | null> {
+        return this.repo.findOne({
+            where: { groupId, userId },
+        });
+    }
+    
     async delete(id: number): Promise<void> {
         await this.repo.delete(id);
     }
