@@ -16,6 +16,6 @@ export class FullUserDto {
     this.password = entity.passwordHash;
     this.createdAt = entity.createdAt;
     this.groupsOwned = entity.groupsOwned?.map((g) => g.id);
-    this.memberships = entity.memberships?.map((gm) => gm.group.id);
+    this.memberships = entity.memberships?.map((gm) => gm.groupId);
   }
 }

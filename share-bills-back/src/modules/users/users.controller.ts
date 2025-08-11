@@ -1,9 +1,7 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
-  Param,
   Patch,
   Post,
   UseGuards,
@@ -17,7 +15,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { BaseUserDto } from './dto/base-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { User } from './user.entity';
+import { FullUserDto } from './dto/full-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -31,7 +29,7 @@ export class UsersController {
   @Get('profile')
   async getOne(
     @Req() req: Request & { user?: { userId: number } },
-  ): Promise<User | null> {
+  ): Promise<FullUserDto | null> {
     const userId = req.user?.userId;
     if (!userId || isNaN(Number(userId))) {
       throw new BadRequestException('Invalid or missing user id in JWT');
@@ -43,12 +41,16 @@ export class UsersController {
     return this.usersService.create(user);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Patch()
-  update(@Param('id') id: string, @Body(ValidationPipe) user: UpdateUserDto) {
-    return this.usersService.update(+id, user);
-  }
-  @Delete(':id')
-  delete(@Param('id') id: string) {
-    return this.usersService.delete(+id);
+  update(
+    @Req() req: Request & { user?: { userId: number } },
+    @Body(ValidationPipe) user: UpdateUserDto,
+  ) {
+    const userId = req.user?.userId;
+    if (!userId || isNaN(Number(userId))) {
+      throw new BadRequestException('Invalid or missing user id in JWT');
+    }
+    return this.usersService.update(userId, user);
   }
 }
