@@ -22,7 +22,7 @@ export class UsersService {
     return safe;
   }
 
-  async findOne(id: number): Promise<User| null> {
+  async findOne(id: number): Promise<User | null> {
     const user: User | null = await this.repo
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.groupsOwned', 'groupsOwned')
@@ -36,12 +36,12 @@ export class UsersService {
   }
 
   async create(user: CreateUserDto): Promise<FullUserDto> {
-  //???
-  const hashedPassword: string = await bcrypt.hash(user.passwordHash, 10);
-  const newUser = this.repo.create({ ...user, passwordHash: hashedPassword });
-  const savedUser = await this.repo.save(newUser);
-  return new FullUserDto(savedUser);
-}
+    //???
+    const hashedPassword: string = await bcrypt.hash(user.passwordHash, 10);
+    const newUser = this.repo.create({ ...user, passwordHash: hashedPassword });
+    const savedUser = await this.repo.save(newUser);
+    return new FullUserDto(savedUser);
+  }
 
   async update(id: number, user: UpdateUserDto): Promise<FullUserDto> {
     const existingUser = await this.repo.findOneBy({ id });

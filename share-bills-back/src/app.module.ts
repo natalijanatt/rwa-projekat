@@ -13,7 +13,6 @@ import { ExpenseParticipantsModule } from './modules/expense-participants/expens
 import { GroupsModule } from './modules/groups/groups.module';
 import { GroupMembersBalanceModule } from './modules/group-members-balance/group-members-balance.module';
 import { ExpensesModule } from './modules/expenses/expenses.module';
-import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
@@ -31,23 +30,6 @@ import { LoggerModule } from 'nestjs-pino';
         synchronize: false,
       }),
       inject: [ConfigService],
-    }),
-      LoggerModule.forRoot({
-      pinoHttp: {
-        transport: process.env.NODE_ENV === 'production'
-          ? undefined
-          : {
-              target: 'pino-pretty',
-              options: {
-                translateTime: 'SYS:HH:MM:ss.l',
-                singleLine: false,
-              },
-            },
-        serializers: {
-          req: (req: import('express').Request & { id?: string }) => ({ method: req.method, url: req.url, id: req.id }),
-          res: (res: import('express').Response) => ({ statusCode: res.statusCode }),
-        },
-      },
     }),
     UsersModule,
     AuthModule,

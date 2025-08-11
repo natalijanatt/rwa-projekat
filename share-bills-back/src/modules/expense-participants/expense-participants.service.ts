@@ -28,6 +28,21 @@ export class ExpenseParticipantsService {
     private readonly finalizer: ExpenseFinalizerService,
   ) {}
 
+  async checkParticipant(expenseId: number, userId: number, memberId: number) {
+    const participant = await this.repo
+      .createQueryBuilder('p')
+      .innerJoin('p.member', 'member')
+      .innerJoin('member.user', 'user')
+      .where('p.expense_id = :expenseId', { expenseId })
+      .andWhere('user.id = :userId', { userId })
+      .getOne();
+
+      if(!participant || participant?.memberId !== memberId) {
+        return false;
+      }
+    return true;
+  }
+
   countdown(expenseId: number) {
     return timer(0, 1000).pipe(
       switchMap(() => from(this.expenseService.findOne(expenseId))),
