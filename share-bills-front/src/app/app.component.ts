@@ -9,7 +9,7 @@ import { CardListComponent } from './shared/components/card-list/card-list.compo
 
 @Component({
   selector: 'app-root',
-  imports: [ButtonComponent, InputFieldComponent, FormsModule, CardComponent, CardListComponent],
+  imports: [RouterOutlet, ButtonComponent, InputFieldComponent, FormsModule, CardComponent, CardListComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

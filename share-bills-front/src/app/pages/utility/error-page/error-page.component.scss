@@ -1,0 +1,59 @@
+@use 'variables' as *;
+
+.error-wrap {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: $spacing-xl $spacing-md;
+  background: $color-background;
+  color: $color-text;
+
+  .illustration {
+    max-width: 420px;
+    width: 90%;
+    margin-bottom: $spacing-lg;
+
+    svg { width: 100%; height: auto; display: block; }
+    .float { animation: float 4s ease-in-out infinite; transform-origin: 120px 70px; }
+  }
+
+  .text {
+    text-align: center;
+    display: grid;
+    gap: $spacing-sm;
+
+    .code {
+      font-size: clamp(48px, 10vw, 96px);
+      font-weight: 800;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, $color-primary, $color-primary-dark);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .title {
+      margin: 0;
+      font-size: clamp(20px, 3vw, 28px);
+      font-weight: 700;
+    }
+    .message {
+      margin: 0 auto;
+      max-width: 560px;
+      color: $color-text-light;
+    }
+    .actions {
+      display: flex;
+      gap: $spacing-sm;
+      justify-content: center;
+      margin-top: $spacing-md;
+
+      a { text-decoration: none; }
+    }
+  }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0px); }
+}

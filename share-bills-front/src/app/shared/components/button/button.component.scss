@@ -1,5 +1,5 @@
 @use 'variables' as *;
-
+@use 'sass:color';
 .btn {
   display: inline-flex;
   align-items: center;
@@ -22,12 +22,12 @@
 
   &.btn-secondary {
     background: $color-secondary; color: $color-text;
-    // &:hover:not(:disabled) { background: color.adjust($color-secondary, $lightness: -5%); }
+    &:hover:not(:disabled) { background: color.adjust($color-secondary, $lightness: -5%); }
   }
 
   &.btn-danger {
     background: $color-danger; color: $color-background;
-    // &:hover:not(:disabled) { background: color.adjust($color-danger, $lightness: -8%); }
+    &:hover:not(:disabled) { background: color.adjust($color-danger, $lightness: -8%); }
   }
 
   &:hover:not(:disabled) { transform: translateY(-1px); }

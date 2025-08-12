@@ -5,7 +5,7 @@ import { CardComponent } from '../card/card.component';
 @Component({
   selector: 'app-card-list',
   standalone: true,
-  imports: [NgIf, NgFor, NgClass, CardComponent, CommonModule],
+  imports: [NgIf, NgFor, CardComponent, CommonModule],
   templateUrl: './card-list.component.html',
   styleUrls: ['./card-list.component.scss']
 })
