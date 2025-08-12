@@ -1,3 +1,22 @@
 <p>Ovo je app</p>
 <app-button [label]="'nije kul'" [variant]="'danger'" [size]="'medium'" (clicked)="onClick()"/>
 <p></p>
+<div style="width: 300px;">
+
+    <app-input-field [label]="'label'" [required]="true" [placeholder]="'placeholder'" [type]="'text'"></app-input-field>
+    <app-input-field [label]="'label'" [required]="true" [placeholder]="'placeholder'" [type]="'text'"></app-input-field>
+<form (ngSubmit)="onSubmit()" #f="ngForm">
+  <app-input-field
+    label="Amount"
+    type="number"
+    [value]="'amount'"
+    [required]="true"
+    [showErrorWhen]="'submit'"
+    [submitted]="submited()"
+    errorMessage="Enter a valid amount">
+  </app-input-field>
+
+  <app-button label="Save" type="submit"></app-button>
+</form>
+
+</div>

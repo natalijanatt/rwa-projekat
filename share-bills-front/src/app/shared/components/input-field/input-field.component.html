@@ -1,1 +1,21 @@
-<p>input-field works!</p>
+<div class="input-field" [ngClass]="{ 'has-error': shouldShowError }">
+  <label *ngIf="label">
+    {{ label }}
+    <span *ngIf="required" class="required">*</span>
+  </label>
+
+  <div class="input-wrapper">
+    <i *ngIf="icon" [class]="icon" class="input-icon"></i>
+    <input
+      [type]="type"
+      [placeholder]="placeholder"
+      [value]="value"
+      [disabled]="disabled"
+      [required]="required"
+      [attr.aria-invalid]="shouldShowError ? 'true' : null"
+      (input)="onInput($event)"
+      (blur)="onBlur()" />
+  </div>
+
+  <small *ngIf="activeErrorMessage" class="error">{{ activeErrorMessage }}</small>
+</div>

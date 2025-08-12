@@ -1,0 +1,26 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="app-form">
+  <header *ngIf="title" class="form-header">{{ title }}</header>
+
+  <!-- Your fields go here -->
+  <section class="form-body">
+    <ng-content></ng-content>
+  </section>
+
+  <!-- Error summary (optional) -->
+  <aside *ngIf="showError && submitted && form.invalid" class="error-summary">
+    <strong>Please fix the following:</strong>
+    <ul>
+      <li *ngFor="let e of errorList">
+        {{ e.path || 'form' }} – {{ e.errors.join(', ') }}
+      </li>
+    </ul>
+  </aside>
+
+  <footer class="form-actions">
+    <button type="button" class="btn btn-secondary" (click)="onCancel()">{{ cancelLabel }}</button>
+    <button type="submit" class="btn btn-primary" [disabled]="loading">
+      <span *ngIf="!loading">{{ submitLabel }}</span>
+      <span *ngIf="loading">Saving…</span>
+    </button>
+  </footer>
+</form>

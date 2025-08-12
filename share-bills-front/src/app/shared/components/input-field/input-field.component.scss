@@ -1,0 +1,53 @@
+@use 'variables' as *;
+
+.input-field {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  font-family: $font-family-base;
+
+  label {
+    font-weight: 500;
+    font-size: $font-size-sm;
+    color: $color-text;
+
+    .required {
+      color: $color-danger;
+      margin-left: 0.25rem;
+    }
+  }
+
+  .input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    input {
+      width: 100%;
+      padding: $spacing-sm $spacing-md;
+      padding-left: $spacing-lg;
+      border: 1px solid $color-secondary;
+      border-radius: $border-radius-md;
+      font-size: $font-size-base;
+      outline: none;
+      transition: border-color 0.2s ease;
+
+      &:focus { border-color: $color-primary; }
+      &:disabled { background: $color-secondary; cursor: not-allowed; }
+    }
+
+    .input-icon {
+      position: absolute;
+      left: $spacing-sm;
+      font-size: 1rem;
+      color: $color-text-light;
+    }
+  }
+
+  .error {
+    font-size: $font-size-sm;
+    color: $color-danger;
+  }
+
+  &.has-error input { border-color: $color-danger; }
+}

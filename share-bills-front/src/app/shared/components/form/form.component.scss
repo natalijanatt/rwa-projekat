@@ -1,0 +1,25 @@
+@use 'variables' as *;
+
+.app-form {
+  display: grid;
+  gap: $spacing-md;
+
+  .form-header { font-weight: 600; font-size: $font-size-lg; color: $color-text; }
+  .form-body { display: grid; gap: $spacing-sm; }
+  .form-actions { display: flex; gap: $spacing-sm; justify-content: flex-end; }
+
+  .error-summary {
+    border: 1px solid $color-danger;
+    border-radius: $border-radius-md;
+    padding: $spacing-sm $spacing-md;
+    background: color.adjust($color-danger, $lightness: 45%);
+    ul { margin: $spacing-xs 0 0; padding-left: 1rem; }
+  }
+
+  .btn {
+    padding: $spacing-sm $spacing-md; border: 0; border-radius: $border-radius-md; cursor: pointer;
+    &.btn-secondary { background: $color-secondary; color: $color-text; }
+    &.btn-primary { background: $color-primary; color: $color-background; }
+    &:disabled { opacity: .6; cursor: not-allowed; }
+  }
+}
