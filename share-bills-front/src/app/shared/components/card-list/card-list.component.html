@@ -1,0 +1,53 @@
+<!-- Error state -->
+<ng-container *ngIf="errorMessage; else notError">
+  <ng-container *ngIf="errorTpl; else defaultError"
+                [ngTemplateOutlet]="errorTpl"
+                [ngTemplateOutletContext]="{ $implicit: errorMessage }">
+  </ng-container>
+  <ng-template #defaultError>
+    <div class="state state-error">{{ errorMessage }}</div>
+  </ng-template>
+</ng-container>
+
+<ng-template #notError>
+  <!-- Loading state -->
+  <div class="grid"
+       *ngIf="loading"
+       [style.--min]="minColumnWidth"
+       [style.gap]="gap">
+    <ng-container *ngIf="skeletonTpl; else defaultSkeleton"
+                  [ngTemplateOutlet]="skeletonTpl">
+    </ng-container>
+    <ng-template #defaultSkeleton>
+      <app-card *ngFor="let _ of [].constructor(skeletonCount)"
+                [loading]="true" [elevation]="1" padding="md">
+      </app-card>
+    </ng-template>
+  </div>
+
+  <!-- Empty state -->
+  <ng-container *ngIf="!loading && items?.length === 0">
+    <ng-container *ngIf="emptyTpl; else defaultEmpty"
+                  [ngTemplateOutlet]="emptyTpl">
+    </ng-container>
+    <ng-template #defaultEmpty>
+      <div class="state state-empty">{{ emptyMessage }}</div>
+    </ng-template>
+  </ng-container>
+
+  <!-- Items -->
+  <div class="grid"
+       *ngIf="!loading && items?.length"
+       [style.--min]="minColumnWidth"
+       [style.gap]="gap">
+    <div class="item-wrap"
+         [class.clickable]="clickable"
+         *ngFor="let item of items; let i = index; trackBy: trackBy"
+         (click)="onItemClick(item)">
+      <ng-container
+        [ngTemplateOutlet]="itemTpl ?? null"
+        [ngTemplateOutletContext]="{ $implicit: item, index: i }">
+      </ng-container>
+    </div>
+  </div>
+</ng-template>

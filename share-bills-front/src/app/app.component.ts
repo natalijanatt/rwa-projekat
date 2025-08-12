@@ -4,10 +4,12 @@ import { ButtonComponent } from './shared/components/button/button.component';
 import { LoaderComponent } from './shared/components/loader/loader.component';
 import { InputFieldComponent } from './shared/components/input-field/input-field.component';
 import { FormsModule } from '@angular/forms';
+import { CardComponent } from './shared/components/card/card.component';
+import { CardListComponent } from './shared/components/card-list/card-list.component';
 
 @Component({
   selector: 'app-root',
-  imports: [ButtonComponent, InputFieldComponent, FormsModule],
+  imports: [ButtonComponent, InputFieldComponent, FormsModule, CardComponent, CardListComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

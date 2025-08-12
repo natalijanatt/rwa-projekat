@@ -1,0 +1,26 @@
+@use 'variables' as *;
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--min, 240px), 1fr));
+  gap: var(--gap, 1rem);
+}
+
+.item-wrap {
+  &.clickable { cursor: pointer; }
+}
+
+.state {
+  padding: $spacing-md;
+  border-radius: $border-radius-md;
+  text-align: center;
+  &.state-empty {
+    background: $color-secondary;
+    color: $color-text;
+  }
+  &.state-error {
+    border: 1px solid $color-danger;
+    color: $color-danger;
+    background: color.adjust($color-danger, $lightness: 45%);
+  }
+}

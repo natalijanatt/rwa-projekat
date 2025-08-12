@@ -1,1 +1,51 @@
-<p>card works!</p>
+<article
+  class="card"
+  [ngClass]="[
+    'pad-' + padding,
+    'e' + elevation,
+    hoverable ? 'hoverable' : '',
+    bordered ? 'bordered' : '',
+    clickable ? 'clickable' : '',
+    loading ? 'is-loading' : ''
+  ]"
+  [attr.role]="role"
+  (click)="onClick($event)"
+  [attr.tabindex]="clickable ? 0 : null"
+  [attr.aria-busy]="loading ? 'true' : null"
+>
+  <!-- MEDIA SLOT -->
+  <div class="card-media" *ngIf="!loading">
+    <ng-content select="[card-media]"></ng-content>
+  </div>
+
+  <!-- HEADER -->
+  <header class="card-header" *ngIf="!loading && (title || subtitle)">
+    <div class="titles">
+      <h3 class="title" *ngIf="title">{{ title }}</h3>
+      <p class="subtitle" *ngIf="subtitle">{{ subtitle }}</p>
+    </div>
+    <div class="actions">
+      <ng-content select="[card-actions]"></ng-content>
+    </div>
+  </header>
+
+  <!-- CUSTOM HEADER PROJECTION (overrides text header) -->
+  <ng-content select="[card-header]" *ngIf="!loading"></ng-content>
+
+  <!-- BODY -->
+  <section class="card-body" *ngIf="!loading">
+    <ng-content></ng-content>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="card-footer" *ngIf="!loading">
+    <ng-content select="[card-footer]"></ng-content>
+  </footer>
+
+  <!-- LOADING SKELETON -->
+  <div class="skeleton" *ngIf="loading">
+    <div class="sk-line sk-title"></div>
+    <div class="sk-line"></div>
+    <div class="sk-line short"></div>
+  </div>
+</article>

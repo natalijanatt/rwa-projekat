@@ -1,0 +1,65 @@
+@use 'variables' as *;
+
+.card {
+  background: $color-background;
+  color: $color-text;
+  border-radius: $border-radius-lg;
+  display: grid;
+  gap: $spacing-sm;
+  transition: box-shadow .2s ease, transform .1s ease, border-color .2s ease;
+  border: 1px solid transparent;
+
+  &.bordered { border-color: $color-secondary; }
+
+  &.hoverable:hover { transform: translateY(-1px); }
+
+  &.clickable { cursor: pointer; }
+
+  // Elevation
+  &.e0 { box-shadow: none; }
+  &.e1 { box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  &.e2 { box-shadow: 0 4px 10px rgba(0,0,0,.10); }
+  &.e3 { box-shadow: 0 8px 18px rgba(0,0,0,.12); }
+  &.e4 { box-shadow: 0 12px 28px rgba(0,0,0,.14); }
+
+  // Padding
+  &.pad-none { padding: 0; }
+  &.pad-sm { padding: $spacing-sm; }
+  &.pad-md { padding: $spacing-md; }
+  &.pad-lg { padding: $spacing-lg; }
+
+  .card-media { margin: -$spacing-md -$spacing-md 0; overflow: hidden; border-top-left-radius: inherit; border-top-right-radius: inherit; }
+  &.pad-sm .card-media { margin: -$spacing-sm -$spacing-sm 0; }
+  &.pad-lg .card-media { margin: -$spacing-lg -$spacing-lg 0; }
+
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between; gap: $spacing-sm;
+    .titles {
+      .title { margin: 0; font-size: $font-size-lg; font-weight: 600; }
+      .subtitle { margin: 0; color: $color-text-light; font-size: $font-size-sm; }
+    }
+    .actions { display: inline-flex; gap: $spacing-xs; }
+  }
+
+  .card-body { display: grid; gap: $spacing-sm; }
+
+  .card-footer { border-top: 1px solid $color-secondary; padding-top: $spacing-sm; }
+
+  // Loading skeleton
+  &.is-loading {
+    .skeleton { display: grid; gap: $spacing-xs; padding: $spacing-md; }
+    .sk-line {
+      height: 12px;
+      background: linear-gradient(90deg,
+        rgba(0,0,0,0.06) 25%,
+        rgba(0,0,0,0.10) 37%,
+        rgba(0,0,0,0.06) 63%);
+      border-radius: $border-radius-sm;
+      animation: shimmer 1.2s infinite linear;
+    }
+    .sk-title { height: 18px; width: 60%; }
+    .short { width: 40%; }
+  }
+}
+
+@keyframes shimmer { 0% {background-position: -200px 0;} 100% {background-position: 200px 0;} }
