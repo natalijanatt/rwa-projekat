@@ -1,1 +1,5 @@
-<p>button works!</p>
+<button [type]="type" [disabled]="disabled" [ngClass]="['btn', 'btn-' + variant, 'btn-' + size]" (click)="onClick($event)">
+    <span *ngIf="loading" class="spinner"></span>
+    <i *ngIf="icon && !loading" [class]="icon" class="btn-icon"></i>
+    {{ label }}
+</button>

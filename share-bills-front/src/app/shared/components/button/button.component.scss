@@ -1,0 +1,46 @@
+@use 'variables' as *;
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  border: none;
+  border-radius: $border-radius-md;
+  cursor: pointer;
+  gap: $spacing-sm;
+  transition: background 0.2s ease, transform 0.1s ease;
+
+  &.btn-small { padding: $spacing-xs $spacing-sm; font-size: $font-size-sm; }
+  &.btn-medium { padding: $spacing-sm $spacing-md; font-size: $font-size-base; }
+  &.btn-large { padding: $spacing-md $spacing-lg; font-size: $font-size-lg; }
+
+  &.btn-primary {
+    background: $color-primary; color: $color-background;
+    &:hover:not(:disabled) { background: $color-primary-dark; }
+  }
+
+  &.btn-secondary {
+    background: $color-secondary; color: $color-text;
+    // &:hover:not(:disabled) { background: color.adjust($color-secondary, $lightness: -5%); }
+  }
+
+  &.btn-danger {
+    background: $color-danger; color: $color-background;
+    // &:hover:not(:disabled) { background: color.adjust($color-danger, $lightness: -8%); }
+  }
+
+  &:hover:not(:disabled) { transform: translateY(-1px); }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .btn-icon { font-size: 1.1em; }
+  .spinner {
+    width: 1em; height: 1em;
+    border: 2px solid rgba(255,255,255,0.5);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
