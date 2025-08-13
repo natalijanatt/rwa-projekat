@@ -8,12 +8,15 @@ async function bootstrap() {
 
   app.use(morgan(':method :url :status :res[content-length] - :response-time ms'));
 
-  await app.listen(process.env.PORT ?? 3000);
   app.enableCors({
-    corsOptions
+    ...corsOptions,
+    credentials: false,
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET','HEAD','PUT','PATCH','POST','DELETE','OPTIONS'],
   });
-  app.setGlobalPrefix('api');
+  await app.listen(process.env.PORT ?? 3000);
+  // app.setGlobalPrefix('api');
   console.log(`Application is running on: ${await app.getUrl()}`);
-
+  
 }
 void bootstrap();

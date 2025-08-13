@@ -20,8 +20,8 @@ export class FormComponent {
   @Input() showError = false;
   @Input() autoMarkAllAsTouched = true;
 
-  @Output() submit = new EventEmitter<any>();
-  @Output() cancel = new EventEmitter<void>();
+  @Output() formSubmit = new EventEmitter<any>();
+  @Output() formCancel = new EventEmitter<void>();
 
   submitted = false;
 
@@ -33,10 +33,10 @@ export class FormComponent {
     if (this.form.invalid) {
       return;
     }
-    this.submit.emit(this.form.getRawValue());  
+    this.formSubmit.emit(this.form.getRawValue());  
   }
   onCancel(){
-    this.cancel.emit();
+    this.formCancel.emit();
   }
 
   get errorList(){
