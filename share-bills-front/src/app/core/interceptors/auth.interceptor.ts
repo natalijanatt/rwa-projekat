@@ -3,10 +3,10 @@ import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
-import { AuthState } from '../auth/auth.state';
+import { TokenState } from '../auth/token.state';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const state = inject(AuthState);
+  const state = inject(TokenState);
   const router = inject(Router);
 
   const token = state.accessToken();

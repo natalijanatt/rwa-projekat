@@ -8,8 +8,7 @@ function decodeExp(jwt: string): number | null {
 }
 
 @Injectable({ providedIn: 'root' })
-export class AuthState {
-  user = signal<UserDto | null>(null);
+export class TokenState {
   accessToken = signal<string | null>(localStorage.getItem(ACCESS_KEY));
   private logoutTimer?: any;
 
@@ -20,13 +19,10 @@ export class AuthState {
   }
 
   clear() {
-    this.user.set(null);
     this.accessToken.set(null);
     localStorage.removeItem(ACCESS_KEY);
     clearTimeout(this.logoutTimer);
   }
-
-  setUser(u: UserDto | null) { this.user.set(u); }
 
   get isAuthenticated() {
     const t = this.accessToken();

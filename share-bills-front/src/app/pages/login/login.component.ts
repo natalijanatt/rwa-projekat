@@ -5,10 +5,12 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormComponent } from '../../shared/components/form/form.component';
 import { InputFieldComponent } from '../../shared/components/input-field/input-field.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
-import { AuthService } from '../../core/auth/auth.service';
-import { AuthState } from '../../core/auth/auth.state';
 import { LoginDto } from '../../core/auth/data/login.dto';
-import { catchError, finalize, of, switchMap, tap } from 'rxjs';
+import { take } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { AuthActions } from '../../core/auth/state/auth.actions';
+import { selectIsAuth } from '../../core/auth/state/auth.selectors';
+import { Actions, ofType } from '@ngrx/effects';
 
 @Component({
   selector: 'app-login',
@@ -19,10 +21,11 @@ import { catchError, finalize, of, switchMap, tap } from 'rxjs';
 })
 export class LoginComponent {
   private fb = inject(FormBuilder);
-  private auth = inject(AuthService);
-  private state = inject(AuthState);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private actions$ = inject(Actions);
+
+  constructor(private store: Store) {}
 
   loading = false;
 
@@ -40,26 +43,28 @@ export class LoginComponent {
     this.form.controls[control].markAsDirty();
   }
 
-onSubmit(dto: LoginDto) {
-  if (this.loading) return;
-  this.error = null;
-  this.loading = true;
+  onSubmit(dto: LoginDto) {
+    if (this.loading) return;
+    this.loading = true;
+    this.error = null;
 
-  this.auth.login(dto).pipe(
-    tap(({ access_token: access_token }) => {console.log(access_token); this.state.setToken(access_token)}),
-    switchMap(() => this.auth.me()),
-    tap(user => this.state.setUser(user)),
-    finalize(() => (this.loading = false)),
-    catchError(err => {
-      // map server error to UI
-      this.error = err?.error?.message ?? 'Invalid credentials';
-      this.state.clear();
-      return of(null);
-    })
-  ).subscribe(user => {
-    if (!user) return; // error already handled
-    const redirect = this.route.snapshot.queryParamMap.get('redirect') || '/';
-    this.router.navigateByUrl(redirect);
-  });
-}
+    this.store.dispatch(AuthActions.login(dto));
+
+    // Handle success/failure via actions stream
+    this.actions$
+      .pipe(ofType(AuthActions.loginSuccess), take(1))
+      .subscribe(() => {
+        this.loading = false;
+        const redirect =
+          this.route.snapshot.queryParamMap.get('redirect') || '/';
+        this.router.navigateByUrl(redirect);
+      });
+
+    this.actions$
+      .pipe(ofType(AuthActions.loginFailure), take(1))
+      .subscribe(({ error }) => {
+        this.loading = false;
+        this.error = error ?? 'Login failed';
+      });
+  }
 }
