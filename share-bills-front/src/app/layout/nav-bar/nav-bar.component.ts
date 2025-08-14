@@ -16,14 +16,11 @@ export class NavBarComponent {
   isAuth = signal<boolean>(this.authState.isAuthenticated);
 
   links = [
+    { path: '/',          label: 'Home',      authOnly: false },
     { path: '/me',  label: 'My Profile',  authOnly: true },
     { path: '/groups',  label: 'My Groups',  authOnly: true },
-    { path: '/',          label: 'Home',      authOnly: false },
   ];
 
-  // isAuth():boolean{
-  //   return this.authState.isAuthenticated;
-  // }
   toggle() { this.menuOpen.update(v => !v); }
   close()  { this.menuOpen.set(false); }
 

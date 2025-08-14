@@ -1,25 +1,17 @@
-<div class="min-h-screen grid place-items-center bg-gray-50">
-    <div class="w-full max-w-sm bg-white rounded-2xl shadow p-6">
-        <h1 class="text-xl font-semibold mb-1">Sign in</h1>
-        <p class="text-sm text-gray-500 mb-4" *ngIf="expired">Your session expired. Please sign in again.</p>
+<div class="page">
+  <div class="card">
+    <h1 class="title">Sign in</h1>
+    <p class="note" *ngIf="expired">Your session expired. Please sign in again.</p>
 
-        <!-- Use your FormComponent; capture its instance via #f to read submitted state -->
-        <app-form #f="appForm" [form]="form" [submitLabel]="loading ? 'Signing in…' : 'Sign in'" [loading]="loading" [cancelLabel]="'Reset'"
-            (formSubmit)="onSubmit($event)">
-            <app-input-field label="Email" type="text" [required]="true" [submitted]="f.submitted"
-                [value]="form.controls.email.value" (valueChange)="onInputString('email', $event)"></app-input-field>
+    <app-form #f="appForm" [form]="form" [submitLabel]="loading ? 'Signing in…' : 'Sign in'" [loading]="loading"
+      [cancelLabel]="'Reset'" (formSubmit)="onSubmit($event)">
+      <app-input-field label="Email" type="text" [required]="true" [submitted]="f.submitted"
+        [value]="form.controls.email.value" (valueChange)="onInputString('email', $event)"></app-input-field>
 
-            <app-input-field label="Password" type="password" [required]="true" [submitted]="f.submitted"
-                [value]="form.controls.password.value"
-                (valueChange)="onInputString('password', $event)"></app-input-field>
+      <app-input-field label="Password" type="password" [required]="true" [submitted]="f.submitted"
+        [value]="form.controls.password.value" (valueChange)="onInputString('password', $event)"></app-input-field>
 
-            <p class="text-sm text-red-600 mt-2" *ngIf="error">{{ error }}</p>
-
-            <!-- <div class="mt-4">
-                <app-button type="submit" variant="primary" [label]="loading ? 'Signing in…' : 'Sign in'"
-                    [loading]="loading" [disabled]="form.invalid || loading"></app-button>
-            </div> -->
-        </app-form>
-
-    </div>
+      <p class="error" *ngIf="error">{{ error }}</p>
+    </app-form>
+  </div>
 </div>

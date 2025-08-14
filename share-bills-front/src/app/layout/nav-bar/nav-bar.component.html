@@ -27,6 +27,10 @@
         <a routerLink="/login" routerLinkActive="active" (click)="close()">Log in</a>
       </li>
 
+      <li *ngIf="!isAuth()">
+        <a routerLink="/register" routerLinkActive="active" (click)="close()">Register</a>
+      </li>
+
       <li *ngIf="isAuth()">
         <button class="btn btn--ghost" (click)="logout(); close()">Log out</button>
       </li>

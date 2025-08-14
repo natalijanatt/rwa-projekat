@@ -4,6 +4,7 @@ import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { FullUserDto } from '../users/dto/full-user.dto';
+import { CreateUserDto } from '../users/dto/create-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -33,11 +34,15 @@ export class AuthService {
       return result;
     }
 
-   throw new BadRequestException('Incorrect password');
+    throw new BadRequestException('Incorrect password');
   }
   login(user: Partial<FullUserDto>): { access_token: string } {
     const payload = { email: user.email, sub: user.id };
     const token = this.jwtService.sign(payload);
     return { access_token: token };
+  }
+
+  async register(user: CreateUserDto): Promise<FullUserDto> {
+    return this.usersService.create(user);
   }
 }

@@ -56,7 +56,7 @@ export class LoginComponent {
         this.loading = false;
         const redirect =
           this.route.snapshot.queryParamMap.get('redirect') || '/';
-        this.router.navigateByUrl(redirect);
+        location.assign(redirect);
       });
 
     this.actions$

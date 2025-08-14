@@ -5,7 +5,7 @@ import { AuthActions } from './auth.actions';
 import { AuthService } from '../../../core/auth/auth.service';
 import { TokenState } from '../token.state';
 import { Router } from '@angular/router';
-import { catchError, map, of, switchMap, tap, exhaustMap } from 'rxjs';
+import { catchError, map, of, switchMap, tap, exhaustMap, filter } from 'rxjs';
 
 @Injectable()
 export class AuthEffects {
@@ -14,18 +14,29 @@ export class AuthEffects {
   private tokens = inject(TokenState);
   private router = inject(Router);
 
-  /** Login: call /auth/login, stash token, fetch /auth/me, put user in store */
   login$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.login),
       exhaustMap(({ email, password }) =>
         this.api.login({ email, password }).pipe(
-          // support either {accessToken} or {access_token}
-          tap((t: any) => this.tokens.setToken(t.accessToken ?? t.access_token)),
+          tap((t: any) =>
+            this.tokens.setToken(t.accessToken ?? t.access_token)
+          ),
           switchMap(() => this.api.me()),
-          map(user => AuthActions.loginSuccess({ accessToken: this.tokens.accessToken() ?? '' })),
-          catchError(err =>
-            of(AuthActions.loginFailure({ error: err?.error?.message ?? 'Login failed' }))
+          switchMap((user) =>
+            of(
+              AuthActions.loginSuccess({
+                accessToken: this.tokens.accessToken() ?? '',
+              }),
+              AuthActions.loadUserSuccess({ user })
+            )
+          ),
+          catchError((err) =>
+            of(
+              AuthActions.loginFailure({
+                error: err?.error?.message ?? 'Login failed',
+              })
+            )
           )
         )
       )
@@ -38,10 +49,34 @@ export class AuthEffects {
       ofType(AuthActions.loadUser),
       switchMap(() =>
         this.api.me().pipe(
-          map(user => AuthActions.loadUserSuccess({ user })),
-          catchError(err => of(AuthActions.loadUserFailure({ error: err?.error?.message })))
+          map((user) => AuthActions.loadUserSuccess({ user })),
+          catchError((err) =>
+            of(AuthActions.loadUserFailure({ error: err?.error?.message }))
+          )
         )
       )
+    )
+  );
+
+  navigateAfterLogin$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(AuthActions.loadUserSuccess),
+        tap(() => {
+          const qp = this.router.routerState.snapshot.root.queryParams;
+          const redirect = qp['redirect'] || '/';
+          this.router.navigateByUrl(redirect);
+        })
+      ),
+    { dispatch: false }
+  );
+
+  init$ = createEffect(() =>
+    of(this.tokens.accessToken()).pipe(
+      // only dispatch if we actually have a token
+      map((t) => !!t),
+      filter(Boolean),
+      map(() => AuthActions.loadUser())
     )
   );
 

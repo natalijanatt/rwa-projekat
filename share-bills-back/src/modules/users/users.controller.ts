@@ -3,7 +3,6 @@ import {
   Controller,
   Get,
   Patch,
-  Post,
   UseGuards,
   ValidationPipe,
   Req,
@@ -11,7 +10,6 @@ import {
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { BaseUserDto } from './dto/base-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -35,10 +33,6 @@ export class UsersController {
       throw new BadRequestException('Invalid or missing user id in JWT');
     }
     return this.usersService.findOne(Number(userId));
-  }
-  @Post()
-  create(@Body(ValidationPipe) user: CreateUserDto) {
-    return this.usersService.create(user);
   }
 
   @UseGuards(AuthGuard('jwt'))

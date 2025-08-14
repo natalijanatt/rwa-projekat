@@ -22,13 +22,15 @@ export const authReducer = createReducer(
     ...state,
     status: 'loading',
   })),
-  on(AuthActions.loginSuccess, (state, { accessToken }) => ({
+  on(AuthActions.loginSuccess, (state) => ({
     ...state,
     status: 'authenticated',
   })),
   on(AuthActions.loginFailure, (state, { error }) => ({
     ...state,
     status: 'error',
+    error,
+    user: null,
   })),
   on(AuthActions.loadUser, (state) => ({
     ...state,
@@ -37,10 +39,14 @@ export const authReducer = createReducer(
   on(AuthActions.loadUserSuccess, (state, { user }) => ({
     ...state,
     user,
+    status: 'authenticated',
+    error: undefined,
   })),
   on(AuthActions.loadUserFailure, (state, { error }) => ({
     ...state,
     status: 'error',
+    error,
+    user: null,
   })),
   on(AuthActions.logout, () => initialAuthState)
 );

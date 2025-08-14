@@ -20,7 +20,7 @@ export class TokenState {
     localStorage.setItem(ACCESS_KEY, token);
     // this._isAuthenticated.set(true);
     this.scheduleAutoLogout(token);
-    location.assign('/');
+    
   }
 
   clear() {
