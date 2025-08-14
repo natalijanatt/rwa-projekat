@@ -18,7 +18,7 @@
 
   <footer class="form-actions">
     <button type="button" class="btn btn-secondary" (click)="onCancel()">{{ cancelLabel }}</button>
-    <button type="submit" class="btn btn-primary" [disabled]="loading">
+    <button type="submit" class="btn btn-primary" [disabled]="loading || form.invalid">
       <span *ngIf="!loading">{{ submitLabel }}</span>
       <span *ngIf="loading">Saving…</span>
     </button>

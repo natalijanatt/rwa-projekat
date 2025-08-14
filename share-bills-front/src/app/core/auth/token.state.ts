@@ -12,10 +12,15 @@ export class TokenState {
   accessToken = signal<string | null>(localStorage.getItem(ACCESS_KEY));
   private logoutTimer?: any;
 
+  // private _isAuthenticated = signal<boolean>(false);
+  // readonly isAuthenticated = this._isAuthenticated.asReadonly();
+
   setToken(token: string) {
     this.accessToken.set(token);
     localStorage.setItem(ACCESS_KEY, token);
+    // this._isAuthenticated.set(true);
     this.scheduleAutoLogout(token);
+    location.assign('/');
   }
 
   clear() {
@@ -42,6 +47,7 @@ export class TokenState {
 
   forceLogout() {
     this.clear();
+    // this._isAuthenticated.set(false);
     location.assign('/login?expired=1');
   }
 }

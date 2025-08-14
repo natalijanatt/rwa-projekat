@@ -23,7 +23,4 @@ export class AuthService {
 }
 
   me() { return this.http.get<UserDto>(`${this.base}/users/profile`); }
-  logout() {
-    return this.http.post<void>(`${this.base}/auth/logout`, {});
-  }
 }

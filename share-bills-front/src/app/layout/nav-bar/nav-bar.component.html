@@ -1,0 +1,35 @@
+<!-- shared/components/navbar/navbar.component.html -->
+<nav class="nav" role="navigation" aria-label="Main">
+  <div class="nav__inner">
+    <a class="nav__brand" routerLink="/" (click)="close()">ShareBills</a>
+
+    <button
+      class="nav__toggle"
+      type="button"
+      aria-label="Toggle menu"
+      [attr.aria-expanded]="menuOpen()"
+      (click)="toggle()">
+      ☰
+    </button>
+
+    <ul class="nav__links" [class.nav__links--open]="menuOpen()">
+      <li *ngFor="let item of links"
+          [class.hidden]="item.authOnly && !isAuth()">
+        <a routerLink="{{ item.path }}"
+           routerLinkActive="active"
+           [routerLinkActiveOptions]="{ exact: true }"
+           (click)="close()">
+          {{ item.label }}
+        </a>
+      </li>
+
+      <li *ngIf="!isAuth()">
+        <a routerLink="/login" routerLinkActive="active" (click)="close()">Log in</a>
+      </li>
+
+      <li *ngIf="isAuth()">
+        <button class="btn btn--ghost" (click)="logout(); close()">Log out</button>
+      </li>
+    </ul>
+  </div>
+</nav>

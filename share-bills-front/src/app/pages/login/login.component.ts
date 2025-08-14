@@ -4,7 +4,6 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormComponent } from '../../shared/components/form/form.component';
 import { InputFieldComponent } from '../../shared/components/input-field/input-field.component';
-import { ButtonComponent } from '../../shared/components/button/button.component';
 import { LoginDto } from '../../core/auth/data/login.dto';
 import { take } from 'rxjs';
 import { Store } from '@ngrx/store';
@@ -14,7 +13,7 @@ import { Actions, ofType } from '@ngrx/effects';
 
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, FormComponent, InputFieldComponent, ButtonComponent],
+  imports: [CommonModule, FormComponent, InputFieldComponent],
   standalone: true,
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',

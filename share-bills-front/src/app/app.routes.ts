@@ -2,7 +2,6 @@ import { Routes } from '@angular/router';
 import { OfflineComponent } from './pages/utility/offline/offline.component';
 import { Error500Component } from './pages/utility/error500/error500.component';
 import { Error404Component } from './pages/utility/error404/error404.component';
-import { LoginComponent } from './pages/login/login.component';
 import { authGuard, matchAuthGuard, redirectLoggedInToApp } from './core/guards/auth.guard';
 
 export const routes: Routes = [
@@ -20,10 +19,41 @@ export const routes: Routes = [
       import('./pages/login/login.component').then((m) => m.LoginComponent),
   },
   //add register route
+
+  //PRIVATE ROUTES
+  { path: 'me',
+    canMatch: [authGuard],
+    loadComponent: () =>
+      import('./pages/user/profile/profile.component').then((m) => m.ProfileComponent),
+  },
+  { path: 'update-me',
+    canMatch: [authGuard],
+    loadComponent: () =>
+      import('./pages/user/update/update.component').then((m) => m.UpdateComponent),
+  },
+  { path: 'groups',
+    canMatch: [authGuard],
+    loadComponent: () =>
+      import('./pages/groups/groups-all/groups-all.component').then((m) => m.GroupsAllComponent),
+  },
+  { path: 'groups/:groupId',
+    canMatch: [authGuard],
+    loadComponent: () =>
+      import('./pages/groups/group-details/group-details.component').then((m) => m.GroupDetailsComponent),
+  },
+  { path: 'groups/:groupId/expenses',
+    canMatch: [authGuard],
+    loadComponent: () =>
+      import('./pages/groups/group-expenses/group-expenses.component').then((m) => m.GroupExpensesComponent),
+  },
+  { path: 'groups/create',
+    canMatch: [authGuard],
+    loadComponent: () =>
+      import('./pages/groups/group-create/group-create.component').then((m) => m.GroupCreateComponent),
+  },
   { path: 'offline', component: OfflineComponent },
   { path: '500', component: Error500Component },
   { path: '**', component: Error404Component },
 
-  //PRIVATE ROUTES
   
 ];

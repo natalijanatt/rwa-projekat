@@ -19,7 +19,6 @@ export class FormComponent {
   @Input() loading = false;
   @Input() showError = false;
   @Input() autoMarkAllAsTouched = true;
-
   @Output() formSubmit = new EventEmitter<any>();
   @Output() formCancel = new EventEmitter<void>();
 
@@ -36,6 +35,7 @@ export class FormComponent {
     this.formSubmit.emit(this.form.getRawValue());  
   }
   onCancel(){
+    this.form.reset();
     this.formCancel.emit();
   }
 

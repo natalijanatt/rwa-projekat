@@ -1,0 +1,31 @@
+/* shared/components/navbar/navbar.component.scss */
+.nav {
+  position: sticky; top: 0; z-index: 1000;
+  background: #ffffff; border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.nav__inner {
+  max-width: 1200px; margin: 0 auto; padding: .75rem 1rem;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+}
+.nav__brand { font-weight: 700; text-decoration: none; color: #0a0a0a; }
+.nav__toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 1.25rem; border: 0; background: transparent; cursor: pointer;
+}
+.nav__links {
+  list-style: none; margin: 0; padding: 0;
+  display: none; flex-direction: column; align-items: start; gap: .75rem;
+}
+.nav__links--open { display: flex; }
+.nav__links a, .btn { text-decoration: none; color: #0a0a0a; }
+.nav__links a.active { border-bottom: 2px solid #007F9F; }
+.btn { border: 1px solid rgba(0,0,0,.1); padding: .4rem .75rem; border-radius: .5rem; background: #fff; }
+.btn--ghost { background: transparent; }
+
+.hidden { display: none !important; }
+
+/* Desktop */
+@media (min-width: 768px) {
+  .nav__toggle { display: none; }
+  .nav__links { display: flex; flex-direction: row; align-items: center; gap: 1rem; }
+}

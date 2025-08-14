@@ -4,7 +4,7 @@
         <p class="text-sm text-gray-500 mb-4" *ngIf="expired">Your session expired. Please sign in again.</p>
 
         <!-- Use your FormComponent; capture its instance via #f to read submitted state -->
-        <app-form #f="appForm" [form]="form" [submitLabel]="loading ? 'Signing in…' : 'Sign in'" [loading]="loading"
+        <app-form #f="appForm" [form]="form" [submitLabel]="loading ? 'Signing in…' : 'Sign in'" [loading]="loading" [cancelLabel]="'Reset'"
             (formSubmit)="onSubmit($event)">
             <app-input-field label="Email" type="text" [required]="true" [submitted]="f.submitted"
                 [value]="form.controls.email.value" (valueChange)="onInputString('email', $event)"></app-input-field>
@@ -15,10 +15,10 @@
 
             <p class="text-sm text-red-600 mt-2" *ngIf="error">{{ error }}</p>
 
-            <div class="mt-4">
+            <!-- <div class="mt-4">
                 <app-button type="submit" variant="primary" [label]="loading ? 'Signing in…' : 'Sign in'"
                     [loading]="loading" [disabled]="form.invalid || loading"></app-button>
-            </div>
+            </div> -->
         </app-form>
 
     </div>
