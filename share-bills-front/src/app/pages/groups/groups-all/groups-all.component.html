@@ -1,1 +1,22 @@
-<p>groups-all works!</p>
+<div class="page">
+  <header class="page-head">
+    <h1>All Groups</h1>
+    <span class="count" *ngIf="groups()?.length as n">{{ n }} {{ n === 1 ? 'group' : 'groups' }}</span>
+  </header>
+
+  <!-- Empty state -->
+  <div class="empty" *ngIf="(groups()?.length || 0) === 0">
+    <div class="empty-illustration" aria-hidden="true">👥</div>
+    <h2>No groups yet</h2>
+    <p>Create a group to get started.</p>
+  </div>
+
+  <!-- Grid list -->
+  <section class="groups-grid" *ngIf="(groups()?.length || 0) > 0">
+    <article class="group-card" *ngFor="let g of groups()">
+      <div class="card-head">
+        <h3 class="name" [title]="g?.name">{{ g?.name }}</h3>
+      </div>
+    </article>
+  </section>
+</div>

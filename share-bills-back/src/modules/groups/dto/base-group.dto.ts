@@ -1,10 +1,10 @@
-import { User } from "src/modules/users/user.entity";
 import { Group } from "../group.entity";
+import { BaseUserDto } from "src/modules/users/dto/base-user.dto";
 
 export class BaseGroupDto {
   id: number;
   name: string;
-  owner: User;
+  owner: BaseUserDto;
 
   constructor(entity: Group) {
     this.id = entity.id;
