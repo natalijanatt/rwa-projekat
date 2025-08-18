@@ -15,6 +15,9 @@ export class User {
   @Column({ length: 255 })
   email: string;
 
+  @Column({name: 'image_path', nullable: true})
+  imagePath: string;
+
   @Column({ name: 'password_hash', length: 255 })
   passwordHash: string;
 

@@ -5,6 +5,8 @@ import { Repository } from 'typeorm';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { GroupMembersBalanceService } from '../group-members-balance/group-members-balance.service';
 import { ExpenseFinalizerService } from './expense.finalizer.service';
+import { PendingExpenseBus } from 'src/realtime/pending-expense.bus';
+import { GroupMembersService } from '../group-members/group-members.service';
 
 @Injectable()
 export class ExpensesService {
@@ -12,7 +14,9 @@ export class ExpensesService {
     @InjectRepository(Expense)
     private readonly expenseRepo: Repository<Expense>,
     private readonly groupMembersBalanceService: GroupMembersBalanceService,
-    private readonly finalizer: ExpenseFinalizerService
+    private readonly finalizer: ExpenseFinalizerService,
+    private readonly bus: PendingExpenseBus,
+    private readonly groupMembersService: GroupMembersService,
   ) {}
 
   async findOne(id: number): Promise<Expense | null> {
@@ -47,10 +51,14 @@ export class ExpensesService {
         data.paidToId,
         entity.groupId,
       );
+    const expense = await this.expenseRepo.save(entity);
+    return expense;
     }
     const expense = await this.expenseRepo.save(entity);
 
     this.finalizer.schedule(expense.id, new Date(entity.acceptanceDeadline || Date.now() + 5 * 60 * 1000));
+
+    await this.groupMembersService.emitToGroup(expense.groupId, expense);
 
     return expense;
   }

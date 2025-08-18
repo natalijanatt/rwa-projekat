@@ -13,6 +13,9 @@ import { ExpenseParticipantsModule } from './modules/expense-participants/expens
 import { GroupsModule } from './modules/groups/groups.module';
 import { GroupMembersBalanceModule } from './modules/group-members-balance/group-members-balance.module';
 import { ExpensesModule } from './modules/expenses/expenses.module';
+import { MulterModule } from '@nestjs/platform-express';
+import { StorageService } from './modules/storage/storage.service';
+import { RealtimeModule } from './realtime/realtime/realtime.module';
 
 @Module({
   imports: [
@@ -31,6 +34,7 @@ import { ExpensesModule } from './modules/expenses/expenses.module';
       }),
       inject: [ConfigService],
     }),
+    MulterModule.register({limits: { fileSize: 5 * 1024 * 1024 }}),
     UsersModule,
     AuthModule,
     ThrottlerModule.forRoot(),
@@ -38,9 +42,10 @@ import { ExpensesModule } from './modules/expenses/expenses.module';
     ExpenseParticipantsModule,
     GroupsModule,
     GroupMembersBalanceModule,
-    ExpensesModule
+    ExpensesModule,
+    RealtimeModule
   ],
   controllers: [AppController, ExpenseParticipantsController],
-  providers: [AppService, {provide: 'APP_GUARD', useClass: ThrottlerGuard}],
+  providers: [AppService, {provide: 'APP_GUARD', useClass: ThrottlerGuard}, StorageService],
 })
 export class AppModule {}

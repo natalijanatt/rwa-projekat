@@ -10,4 +10,12 @@ export class UserService {
     private http = inject(HttpClient);
     private base = environment.apiUrl;
 
+    updateAvatar(file: File) {
+        const formData = new FormData();
+        formData.append('file', file);
+        return this.http.post(`${this.base}/users/avatar`, formData, {
+            reportProgress: true,
+            observe: 'events'
+        });
+    }
 }

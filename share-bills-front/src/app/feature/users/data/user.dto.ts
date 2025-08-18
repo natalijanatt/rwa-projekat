@@ -3,6 +3,7 @@ export interface UserDto {
   name: string;
   email: string;
   password: string;
+  imagePath: string;
   createdAt: Date;
   groupsOwned: number[];
   memberships: number[];

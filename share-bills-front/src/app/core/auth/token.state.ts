@@ -45,6 +45,7 @@ export class TokenState {
     else this.forceLogout();
   }
 
+
   forceLogout() {
     this.clear();
     // this._isAuthenticated.set(false);

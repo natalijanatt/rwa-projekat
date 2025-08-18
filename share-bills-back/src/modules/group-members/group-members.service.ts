@@ -3,12 +3,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { GroupMember } from './group-members.entity';
 import { Repository } from 'typeorm';
 import { BaseGroupMemberDto } from './dto/BaseGroupMember.dto';
+import { PendingExpenseBus } from 'src/realtime/pending-expense.bus';
+import { PendingExpenseEvent } from '../expenses/dto/pending-expense-event';
+import { Expense } from '../expenses/expense.entity';
+import { ParticipantStatus } from '../expense-participants/expense-participants.entity';
 
 @Injectable()
 export class GroupMembersService {
     constructor(
         @InjectRepository(GroupMember)
         private readonly repo: Repository<GroupMember>,
+        private readonly bus: PendingExpenseBus
     ) {}
 
     async findAll(): Promise<GroupMember[]> {
@@ -40,5 +45,20 @@ export class GroupMembersService {
     
     async delete(id: number): Promise<void> {
         await this.repo.delete(id);
+    }
+
+    async emitToGroup(groupId: number, expense: Expense) {
+
+        const members = await this.getMembers(groupId);
+        members.forEach(member => {
+            const ev: PendingExpenseEvent = {
+                type: 'pending-expense',
+                expense,
+                me: { status: ParticipantStatus.Pending, memberId: member.userId },
+            };
+            this.bus.emitToUser(member.userId, ev);
+            console.log('[BUS] emit to', member.userId, ev.expense.id);
+
+        });
     }
 }

@@ -11,7 +11,6 @@ import { map, takeWhile } from 'rxjs/operators';
 import { ExpensesService } from '../expenses/expenses.service';
 import { Expense } from '../expenses/expense.entity';
 import { GroupMembersBalanceService } from '../group-members-balance/group-members-balance.service';
-import { GroupMemberBalance } from '../group-members-balance/group-members-balance.entity';
 import { ExpenseFinalizerService } from '../expenses/expense.finalizer.service';
 
 @Injectable()
@@ -21,10 +20,6 @@ export class ExpenseParticipantsService {
     private readonly repo: Repository<ExpenseParticipant>,
     private readonly expenseService: ExpensesService,
     private readonly groupMembersBalanceService: GroupMembersBalanceService,
-    @InjectRepository(Expense)
-    private readonly expenseRepo: Repository<Expense>,
-    @InjectRepository(GroupMemberBalance)
-    private readonly balanceRepo: Repository<GroupMemberBalance>,
     private readonly finalizer: ExpenseFinalizerService,
   ) {}
 
@@ -228,5 +223,16 @@ export class ExpenseParticipantsService {
         acceptedCount,
       };
     });
+  }
+
+  findPendingEventsForUser(userId: number) {
+    return this.repo
+      .createQueryBuilder('p')
+      .leftJoinAndSelect('p.expense', 'expense')
+      .innerJoin('p.member', 'member')
+      .leftJoinAndSelect('member.user', 'user')
+      .where('user.id = :userId', { userId })
+      .andWhere('p.status = :status', { status: ParticipantStatus.Pending })
+      .getMany();
   }
 }

@@ -2,10 +2,12 @@ import { Component, inject, signal } from '@angular/core';
 import { GroupBaseDto } from '../../../feature/groups/data/group-base.dto';
 import { GroupService } from '../../../feature/groups/group.service';
 import { NgFor, NgIf } from '@angular/common';
+import { GroupCardComponent } from '../../../shared/components/group-card/group-card.component';
+import { GroupListComponent } from '../../../shared/components/group-list/group-list.component';
 
 @Component({
   selector: 'app-groups-all',
-  imports: [NgIf, NgFor],
+  imports: [NgIf, GroupListComponent],
   templateUrl: './groups-all.component.html',
   styleUrl: './groups-all.component.scss'
 })

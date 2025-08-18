@@ -63,4 +63,11 @@ export class UsersService {
     const user = await this.repo.findOneBy({ email });
     return user ? new FullUserDto(user) : null;
   }
+
+  async updateAvatar(id: number, avatarPath: string) {
+      return await this.repo.update(
+        { id },
+        { imagePath: avatarPath }
+      )
+  }
 }

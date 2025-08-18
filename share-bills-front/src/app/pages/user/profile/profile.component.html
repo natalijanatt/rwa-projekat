@@ -27,9 +27,10 @@
   <!-- Loaded state -->
   <div class="card" *ngIf="user as u">
     <div class="card-header">
-      <div class="avatar" aria-hidden="true">
-        {{ (u.name || u.email)?.charAt(0) | uppercase }}
+      <div class="avatar" aria-hidden="true" *ngIf="!u.imagePath">
+        {{ (u.name || u.email).charAt(0) | uppercase }}
       </div>
+      <img class="avatar" *ngIf="u.imagePath" [src]="u.imagePath" alt="User Avatar" />
       <div class="titles">
         <h1 class="title">{{ u.name || 'User' }}</h1>
         <p class="subtitle">{{ u.email }}</p>

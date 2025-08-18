@@ -28,7 +28,7 @@ export class GroupsController {
     @Get(':id')
     async findOne(
         @Req() req: Request & { user: { userId: number } },
-        @Param('id') id: string): Promise<Group | null> {
+        @Param('id') id: string): Promise<BaseGroupDto | null> {
         const userId = req.user?.userId;
         if (!userId || isNaN(Number(userId))) {
             throw new BadRequestException('You have to be logged in to access this resource');
@@ -79,6 +79,22 @@ export class GroupsController {
 
         return this.groupsService.addMemberToGroup(+groupId, +memberId);
     }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Get(':id/members')
+    async getGroupMembers(
+        @Req() req: Request & { user: { userId: number } },
+        @Param('id') id: string
+    ): Promise<BaseGroupMemberDto[]> {
+        const userId = req.user?.userId;
+        if (!userId || isNaN(Number(userId))) {
+            throw new BadRequestException('You have to be logged in to access this resource');
+        }
+        const validated = await this.groupsService.checkMembership(userId, +id);
+        if (!validated) throw new ForbiddenException('You do not have access to this resource');
+        return this.groupMembersService.getMembers(+id);
+    }
+
 
     // @Patch(':id')
     // update(@Param('id') id: string, @Body(ValidationPipe) group: UpdateGroupDto): Promise<Group | null> {

@@ -16,9 +16,30 @@ import { GroupMembersBalanceService } from '../group-members-balance/group-membe
 import { ExpenseFinalizerService } from './expense.finalizer.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Expense, ExpenseParticipant, GroupMember, Group, User, GroupMemberBalance])],
+  imports: [
+    TypeOrmModule.forFeature([
+      Expense,
+      ExpenseParticipant,
+      GroupMember,
+      Group,
+      User,
+      GroupMemberBalance,
+    ]),
+  ],
   controllers: [ExpensesController],
-  providers: [ExpensesService, ExpenseParticipantsService, GroupsService, GroupMembersService, UsersService, GroupMembersBalanceService, ExpenseFinalizerService],
-  exports: [ExpensesService, ExpenseParticipantsService, ExpenseFinalizerService]
+  providers: [
+    ExpensesService,
+    ExpenseParticipantsService,
+    GroupsService,
+    GroupMembersService,
+    UsersService,
+    GroupMembersBalanceService,
+    ExpenseFinalizerService,
+  ],
+  exports: [
+    ExpensesService,
+    ExpenseParticipantsService,
+    ExpenseFinalizerService,
+  ],
 })
 export class ExpensesModule {}

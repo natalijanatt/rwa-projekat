@@ -7,6 +7,7 @@ import { CreateGroupDto } from './dto/create-group.dto';
 import { GroupMembersService } from '../group-members/group-members.service';
 import { GroupMember } from '../group-members/group-members.entity';
 import { UsersService } from '../users/users.service';
+import { BaseUserDto } from '../users/dto/base-user.dto';
 
 @Injectable()
 export class GroupsService {
@@ -24,9 +25,16 @@ export class GroupsService {
             .getMany();
         return groups.map(group => new BaseGroupDto(group));
     }
+    async findOne(groupId: number): Promise<BaseGroupDto | null> {
+        const group = await this.repo.findOneBy({ id: groupId });
 
-    async findOne(groupId: number): Promise<Group | null> {
-        return this.repo.findOneBy({ id: groupId });
+        if (!group) return null;
+        const owner = await this.userService.findOne(group.ownerId);
+        if(!owner) return null;
+        const secure = new BaseGroupDto(group);
+        secure.owner = new BaseUserDto(owner);
+        return secure;
+    
     }
 
     async checkMembership(userId: number, groupId: number): Promise<boolean> {

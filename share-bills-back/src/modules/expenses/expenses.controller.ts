@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   Req,
   Sse,
   UseGuards,
@@ -17,7 +18,14 @@ import { CreateExpenseDto } from './dto/create-expense.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { GroupsService } from '../groups/groups.service';
 import { GroupMembersService } from '../group-members/group-members.service';
-import { ParticipantStatus } from '../expense-participants/expense-participants.entity';
+import {
+  ExpenseParticipant,
+  ParticipantStatus,
+} from '../expense-participants/expense-participants.entity';
+import { PendingExpenseBus } from 'src/realtime/pending-expense.bus';
+import { concatMap, from, interval, map, merge, Observable, tap } from 'rxjs';
+import { PendingExpenseEvent } from './dto/pending-expense-event';
+import type { Response } from 'express';
 
 type RespondDto = { status: ParticipantStatus };
 
@@ -28,6 +36,7 @@ export class ExpensesController {
     private readonly expenseParticipantsService: ExpenseParticipantsService,
     private readonly groupsService: GroupsService,
     private readonly groupMembersService: GroupMembersService,
+    private readonly bus: PendingExpenseBus,
   ) {}
 
   @UseGuards(AuthGuard('jwt'))
@@ -75,7 +84,11 @@ export class ExpensesController {
       );
     }
     const validateParticipant =
-      await this.expenseParticipantsService.checkParticipant(expenseId, userId, memberId);
+      await this.expenseParticipantsService.checkParticipant(
+        expenseId,
+        userId,
+        memberId,
+      );
     if (!validateParticipant) {
       throw new BadRequestException(
         'You are not a participant of this expense',
@@ -92,5 +105,48 @@ export class ExpensesController {
       memberId,
       dto.status,
     );
+  }
+
+  // @UseGuards(AuthGuard('jwt'))
+  @Sse('expense-stream')
+  expenseStream(
+    @Query('userId') userId: number,
+  ): Observable<{ data: PendingExpenseEvent }> {
+    const backlog$ = from(
+      this.expenseParticipantsService.findPendingEventsForUser(userId),
+    ).pipe(
+      concatMap((rows) => from(rows)),
+      tap(row => console.log('[SSE row]', row)),
+      map((row) => this.toPendingEvent(row)),
+    );
+
+  //   const heartbeat$ = interval(15000).pipe(
+  //   map(() => ({ type: 'heartbeat', data: null } as MessageEvent))
+  // );
+
+    // 2) live stream
+    const live$ = this.bus.forUser$(userId);
+
+    // 3) merge + shape as SSE
+    return merge(backlog$, live$).pipe(
+      map((data) => ({ data }) as MessageEvent),
+    );
+  }
+
+  private toPendingEvent(p: ExpenseParticipant): PendingExpenseEvent {
+    return {
+      type: 'pending-expense',
+      expense: {
+        id: p.expenseId ?? p.expense?.id,
+        title: p.expense?.title ?? '(loading...)',
+        amount: p.expense?.amount ?? 0,
+        groupId: p.groupId ?? p.expense?.groupId,
+        paidById: p.expense?.paidById ?? 0,
+      },
+      me: {
+        memberId: p.memberId,
+        status: p.status ?? ParticipantStatus.Pending,
+      },
+    };
   }
 }
