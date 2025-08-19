@@ -1,0 +1,60 @@
+<div class="group-card" *ngIf="group; else loading">
+  <div class="media">
+    <img [ngSrc]="group.imagePath || 'assets/group-placeholder.webp'" width="320" height="180" alt="{{ group.name }}"
+      (error)="onImgError($event)" />
+      <div class="actions">
+      <button type="button" class="btn" (click)="onUpdate()">Update</button>
+      <button type="button" class="btn primary" (click)="onAddExpense()">Add Expense</button>
+      <button type="button" class="btn outline" (click)="onUpdateGroup()">Update Group</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <h1 class="title" title="{{ group.name }}">{{ group.name }}</h1>
+
+    <div class="meta">
+      <div class="meta-row">
+        <span class="label">Owner:</span>
+        <span class="value">{{ group.owner.name }}</span>
+      </div>
+      <div class="meta-row">
+        <span class="label">Member count:</span>
+        <span class="value">{{ membersCount }}</span>
+      </div>
+    </div>
+
+    <!-- Members list (scrollable) -->
+    <div class="members">
+      <div class="members-header">
+        <h2>Members</h2>
+        <span class="badge">{{ membersCount }}</span>
+      </div>
+
+      <div class="member-list" role="list" [attr.aria-label]="'Members of ' + group.name">
+        <div class="member-item" *ngFor="let m of members; trackBy: trackByMemberId" role="listitem">
+          <img class="avatar" [ngSrc]="m.user.imagePath || 'assets/avatar-placeholder.webp'" width="40" height="40"
+            alt="{{ m.user.name || 'Member' }}" (error)="onMemberImgError($event)" />
+          <div class="info">
+            <div class="name" [title]="m.user.name">{{ m.user.name }}</div>
+            <div class="email" [title]="m.user.email">{{ m.user.email }}</div>
+          </div>
+        </div>
+
+        <div class="empty" *ngIf="membersCount === 0">No members yet.</div>
+      </div>
+    </div>
+
+    
+  </div>
+</div>
+
+<ng-template #loading>
+  <div class="skeleton">
+    <div class="sk-img"></div>
+    <div class="sk-lines">
+      <div class="sk-line w-60"></div>
+      <div class="sk-line w-40"></div>
+      <div class="sk-line w-30"></div>
+    </div>
+  </div>
+</ng-template>

@@ -1,11 +1,7 @@
 <div class="conversation-list">
   <ng-container *ngFor="let group of groups">
     <div class="conversation-date-block">
-      <!-- <h3 class="conversation-date">{{ group.displayDate }}</h3> -->
-
-      <!-- <ng-container *ngFor="let group of groups"> -->
-        <app-group-card [group]="group"></app-group-card>
-      <!-- </ng-container> -->
+        <app-group-card [group]="group" (open)="onOpen(group.id)"></app-group-card>
     </div>
   </ng-container>
 </div>

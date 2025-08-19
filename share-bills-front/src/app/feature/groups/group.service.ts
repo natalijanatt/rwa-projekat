@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environment/environment';
 import { GroupBaseDto } from './data/group-base.dto';
+import { GroupFullDto } from './data/group-full.dto';
 
 @Injectable({
   providedIn: 'root',
@@ -15,6 +16,6 @@ export class GroupService {
     }
 
     getGroupById(id: number) {
-        return this.http.get<GroupBaseDto>(`${this.base}/groups/${id}`);
+        return this.http.get<GroupFullDto>(`${this.base}/groups/${id}`);
     }
 }

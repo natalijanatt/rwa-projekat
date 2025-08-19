@@ -1,0 +1,223 @@
+@use 'variables' as *;
+
+:host {
+  display: block;
+}
+
+.group-card {
+  width: inherit;
+  margin: 0.5rem;
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  background: $color-background-dark;
+  border: 1px solid gray;
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.media{
+  width: 25%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.media img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 12px;
+  // border: 1px solid rgba(170, 170, 170, 0.06);
+}
+
+.media img.img-fallback {
+  object-fit: contain;
+  padding: 12px;
+}
+
+.content{
+  width: 75%;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+.content .title {
+  margin: 0 0 8px;
+  font-size: 1.375rem;
+  line-height: 1.2;
+  font-weight: 600;
+  color: white;
+}
+
+.meta {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.meta-row {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+
+  .label {
+    color: #9aa4b2;
+    font-size: 0.9rem;
+  }
+  .value {
+    color: #e5e7eb;
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.btn {
+  appearance: none;
+  border: 1px solid gray;
+  background: rgba(255,255,255,0.04);
+  color: #e5e7eb;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 0.05s ease, background 0.15s ease, border-color 0.15s ease;
+
+  &:hover { background: rgba(255,255,255,0.08); }
+  &:active { transform: translateY(1px); }
+}
+
+.btn.primary {
+  border-color: rgba(59,130,246,0.5);
+  background: rgba(59,130,246,0.15);
+}
+
+.btn.outline {
+  background: transparent;
+}
+
+.skeleton {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 16px;
+  align-items: center;
+
+  .sk-img {
+    width: 140px;
+    height: 140px;
+    border-radius: 12px;
+    background: linear-gradient(90deg, #1f2937 25%, #2b3442 37%, #1f2937 63%);
+    background-size: 400% 100%;
+    animation: shimmer 1.2s infinite;
+  }
+
+  .sk-lines {
+    display: grid;
+    gap: 10px;
+  }
+
+  .sk-line {
+    height: 14px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #1f2937 25%, #2b3442 37%, #1f2937 63%);
+    background-size: 400% 100%;
+    animation: shimmer 1.2s infinite;
+
+    &.w-60 { width: 60%; }
+    &.w-40 { width: 40%; }
+    &.w-30 { width: 30%; }
+  }
+}
+
+ .members {
+    width: auto;
+    border: 1px solid gray;
+    border-radius: 12px;
+    padding: 0.75rem;
+    margin-top: 2rem;
+
+    .members-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+
+      h2 {
+        color: white;
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0;
+      }
+      .badge {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 999px;
+        background: #f2f4f7;
+        color: #344054;
+      }
+    }
+
+    .member-list {
+      max-height: 30vh;
+      overflow-x: auto;
+      display: grid;
+      gap: 0.5rem;
+      padding-right: 0.25rem;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(107, 114, 128, 0.5) transparent;
+    }
+
+    .member-item {
+      display: grid;
+      grid-template-columns: 40px 1fr;
+      gap: 0.75rem;
+      align-items: center;
+      padding: 0.5rem;
+      border-radius: 10px;
+      transition: background 120ms ease-in-out;
+
+      &:hover { 
+        background: #f9fafb; 
+        cursor: pointer; 
+        .info .name{
+          color: black;
+        }
+      }
+      
+
+      .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: #e5e7eb;
+      }
+
+      .info {
+        min-width: 0; /* enable text ellipsis */
+        .name {
+          font-weight: 400;
+          color: white;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .email {
+          font-size: 0.85rem;
+          color: #667085;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+      }
+    }
+
+@keyframes shimmer {
+  0% { background-position: 0% 0; }
+  100% { background-position: 100% 0; }
+}
+}

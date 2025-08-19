@@ -1,21 +1,30 @@
-<div class="conversation-card" (click)="handleClick()">
+<div class="conversation-card" (click)="handleClick()" tabindex="0" role="button" (keydown.enter)="handleClick()">
   <div class="content-avatar">
     <div class="status-user"></div>
     <div class="avatar">
-      <svg class="user-img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
-        <path
-          d="M12,12.5c-3.04,0-5.5,1.73-5.5,3.5s2.46,3.5,5.5,3.5,5.5-1.73,5.5-3.5-2.46-3.5-5.5-3.5Zm0-.5c1.66,0,3-1.34,3-3s-1.34-3-3-3-3,1.34-3,3,1.34,3,3,3Z">
-        </path>
-      </svg>
+      <ng-container *ngIf="group?.imagePath; else fallback">
+        <img
+          [src]="group.imagePath"
+          alt="{{ group.name }}"
+          class="user-img"
+          (error)="onImgError($event)"
+        />
+      </ng-container>
+      <ng-template #fallback>
+        <svg class="user-img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M12,12.5c-3.04,0-5.5,1.73-5.5,3.5s2.46,3.5,5.5,3.5,5.5-1.73,5.5-3.5-2.46-3.5-5.5-3.5Zm0-.5c1.66,0,3-1.34,3-3
+            s-1.34-3-3-3-3,1.34-3,3,1.34,3,3,3Z">
+          </path>
+        </svg>
+      </ng-template>
     </div>
   </div>
 
   <div class="notice-content">
     <div class="username">{{ group.name }}</div>
-    <!-- <div class="user-id">{{ time }}</div> -->
     <div class="lable-message">
       {{ partyName }}
-      <!-- <span class="number-message">{{ conversation?.message_count }}</span> -->
     </div>
   </div>
 </div>

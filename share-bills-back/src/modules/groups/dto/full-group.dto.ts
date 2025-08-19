@@ -5,6 +5,7 @@ import { BaseUserDto } from "src/modules/users/dto/base-user.dto";
 export class FullGroupDto {
   id: number;
   name: string;
+  imagePath?:string;
   owner: BaseUserDto;
   members: BaseGroupMemberDto[];
 
@@ -12,6 +13,7 @@ export class FullGroupDto {
     this.id = entity.id;
     this.name = entity.name;
     this.owner = entity.owner;
-    this.members = entity.members?.map(member => new BaseGroupMemberDto(member));
+    this.imagePath = entity.imagePath;
+    this.members = entity.members?.map(member => new BaseGroupMemberDto(member)) || [];
   }
 }

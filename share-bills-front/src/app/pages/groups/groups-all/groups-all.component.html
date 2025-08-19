@@ -1,13 +1,27 @@
-<div class="page">
-  <!-- Empty state -->
-  <div class="empty" *ngIf="(groups()?.length || 0) === 0">
-    <div class="empty-illustration" aria-hidden="true">👥</div>
-    <h2>No groups yet</h2>
-    <p>Create a group to get started.</p>
+<div class="layout">
+  <div class="left">
+    <app-group-list
+      [groups]="groups()"
+      (selection)="onSelect($event)">
+    </app-group-list>
   </div>
 
-  <!-- Grid list -->
-  <section class="groups-grid" *ngIf="(groups()?.length || 0) > 0">
-      <app-group-list [groups]="groups()"></app-group-list>
-  </section>
+  <div class="right">
+    <ng-container *ngIf="selectedGroup(); else placeholder">
+      <app-group-view
+        *ngIf="selectedGroup()"
+        [group]="selectedGroup()!"
+        (update)="openUpdateDialog($event)"
+        (addExpense)="openAddExpense($event)"
+        (updateGroup)="openGroupSettings($event)">
+      </app-group-view>
+    </ng-container>
+
+    <ng-template #placeholder>
+      <div class="empty">
+        <h3>Select a group</h3>
+        <p>Pick a group from the list to see details and actions.</p>
+      </div>
+    </ng-template>
+  </div>
 </div>

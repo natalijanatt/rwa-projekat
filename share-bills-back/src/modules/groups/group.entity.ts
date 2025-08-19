@@ -24,6 +24,9 @@ export class Group {
   @JoinColumn({ name: 'owner_id' })
   owner: User;
 
+  @Column({name: 'image_path', nullable: true})
+  imagePath: string;
+  
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz', default: () => 'NOW()' })
   createdAt: Date;
 

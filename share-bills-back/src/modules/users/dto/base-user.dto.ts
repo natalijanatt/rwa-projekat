@@ -11,6 +11,6 @@ export class BaseUserDto {
         this.id = entity.id;
         this.name = entity.name;
         this.email = entity.email;
-        this.imagePath = entity.imagePath;
+        this.imagePath = entity?.imagePath;
     }
 }

@@ -4,10 +4,12 @@ import { BaseUserDto } from "src/modules/users/dto/base-user.dto";
 export class BaseGroupDto {
   id: number;
   name: string;
+  imagePath? : string;
   owner: BaseUserDto;
 
   constructor(entity: Group) {
     this.id = entity.id;
+    this.imagePath = entity.imagePath;
     this.name = entity.name;
     this.owner = entity.owner;
   }

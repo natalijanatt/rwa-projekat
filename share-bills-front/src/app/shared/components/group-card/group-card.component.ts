@@ -1,36 +1,59 @@
+import { NgIf } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { GroupBaseDto } from '../../../feature/groups/data/group-base.dto';
+
+export interface GroupBaseDto {
+  id: number;
+  name: string;
+  imagePath?: string;
+  ownerId?: number; // remove if not available in your base dto
+}
 
 @Component({
   selector: 'app-group-card',
-  imports: [],
+  standalone: true,
+  imports: [NgIf],
   templateUrl: './group-card.component.html',
   styleUrl: './group-card.component.scss',
 })
 export class GroupCardComponent {
   @Input({ required: true }) group!: GroupBaseDto;
-
-  /** Pass currently logged-in user id from parent (e.g. from store). */
   @Input() currentUserId?: number;
 
-  /** Emits the conversation.job.id on click */
   @Output() open = new EventEmitter<number>();
 
-  get partyName() {
-    if (!this.group) return '';
-    const sender = this.group.name;
-    return sender ?? '';
+  get partyName(): string {
+    return this.group?.name ?? '';
   }
 
-  // get time(): string {
-  //   const d = new Date(this.conversation?.updated_at);
-  //   // Same as toLocaleTimeString in React (kept default locale)
-  //   return isNaN(d.getTime()) ? '' : d.toLocaleTimeString();
-  // }
-
   handleClick(): void {
-    // if (this.conversation?.job?.id != null) {
-    //   this.open.emit(this.conversation.job.id);
-    // }
+  if (this.group?.id != null) {
+    this.open.emit(this.group.id);
+  }
+}
+
+  onKeydown(e: KeyboardEvent) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      this.handleClick();
+    }
+  }
+
+  onImgError(e: Event) {
+    const img = e.target as HTMLImageElement;
+    img.src = 'assets/group-fallback.png';
+    img.classList.add('img-fallback');
+  }
+
+  get isOwner(): boolean {
+    return !!this.currentUserId && !!this.group?.ownerId && this.currentUserId === this.group.ownerId;
+  }
+
+  get initials(): string {
+    const n = this.partyName.trim();
+    if (!n) return '?';
+    const parts = n.split(/\s+/);
+    const first = parts[0]?.[0] ?? '';
+    const second = parts[1]?.[0] ?? '';
+    return (first + second).toUpperCase();
   }
 }
