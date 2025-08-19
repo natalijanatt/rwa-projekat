@@ -1,3 +1,7 @@
+<div class="header">
+  <h1>Groups</h1>
+  <app-button class="btn btn-primary" (click)="onCreateGroup()" [disabled]="creatingGroup()" [label]="'Create a group'"/>
+  </div>
 <div class="layout">
   <div class="left">
     <app-group-list
@@ -7,21 +11,22 @@
   </div>
 
   <div class="right">
-    <ng-container *ngIf="selectedGroup(); else placeholder">
-      <app-group-view
-        *ngIf="selectedGroup()"
-        [group]="selectedGroup()!"
-        (update)="openUpdateDialog($event)"
-        (addExpense)="openAddExpense($event)"
-        (updateGroup)="openGroupSettings($event)">
-      </app-group-view>
-    </ng-container>
+  <ng-container *ngIf="selectedGroupId() && !creatingGroup(); else createOrEmpty">
+    <app-group-view/>
+  </ng-container>
 
-    <ng-template #placeholder>
-      <div class="empty">
-        <h3>Select a group</h3>
-        <p>Pick a group from the list to see details and actions.</p>
-      </div>
-    </ng-template>
-  </div>
+  <ng-template #createOrEmpty>
+    <ng-container *ngIf="creatingGroup(); else placeholder">
+      <app-group-create (cancel)="onCreateGroup()"></app-group-create>
+    </ng-container>
+  </ng-template>
+
+  <ng-template #placeholder>
+    <div class="empty">
+      <h3>Select a group</h3>
+      <p>Pick a group from the list to see details and actions.</p>
+    </div>
+  </ng-template>
+</div>
+
 </div>

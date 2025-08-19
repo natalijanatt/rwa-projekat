@@ -30,19 +30,29 @@ export class AuthService {
     }),
   ); }
 
-  register(dto: UserCreateDto) {
-    return this.http.post<UserDto>(`${this.base}/auth/register`, dto).pipe(
-      tap({
-        next: (res) => console.log('Register HTTP response:', res),
-        error: (err) => console.warn('Register HTTP error:', err),
-      }),
+  register(dto: UserCreateDto, image?: File) {
+    const url = `${this.base}/auth/register`;
+
+    const request$ = image
+      ? this.http.post<UserDto>(url, this.toFormData(dto, image))
+      : this.http.post<UserDto>(url, dto);
+
+    return request$.pipe(
       catchError((err: HttpErrorResponse) => {
         const msg =
-        (Array.isArray(err.error?.message) ? err.error.message.join(', ') : err.error?.message) ||
-        err.message ||
-        'Registration failed';
-      return throwError(() => ({ ...err, friendlyMessage: msg }));
+          (Array.isArray(err.error?.message) ? err.error.message.join(', ') : err.error?.message) ||
+          err.message || 'Registration failed';
+        return throwError(() => ({ ...err, friendlyMessage: msg }));
       })
     );
+  }
+
+  private toFormData(dto: UserCreateDto, image: File): FormData {
+    const fd = new FormData();
+    Object.entries(dto).forEach(([k, v]) => {
+      if (v !== undefined && v !== null) fd.append(k, String(v));
+    });
+    fd.append('image', image);
+    return fd;
   }
 }

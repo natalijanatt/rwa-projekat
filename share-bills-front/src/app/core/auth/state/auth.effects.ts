@@ -58,18 +58,30 @@ export class AuthEffects {
     )
   );
 
-  navigateAfterLogin$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(AuthActions.loadUserSuccess),
-        tap(() => {
-          const qp = this.router.routerState.snapshot.root.queryParams;
-          const redirect = qp['redirect'] || '/';
-          this.router.navigateByUrl(redirect);
-        })
-      ),
-    { dispatch: false }
-  );
+navigateAfterLogin$ = createEffect(
+  () =>
+    this.actions$.pipe(
+      ofType(AuthActions.loadUserSuccess),
+      tap(() => {
+        const currentUrl = this.router.url;
+        const tree = this.router.parseUrl(currentUrl);
+        const raw = tree.queryParams['redirect'];
+
+        if (typeof raw === 'string' && raw.startsWith('/')) {
+          this.router.navigateByUrl(raw, { replaceUrl: true });
+          return;
+        }
+
+        if (currentUrl.startsWith('/login') || currentUrl.startsWith('/register')) {
+          this.router.navigateByUrl('/', { replaceUrl: true });
+          return;
+        }
+        
+      })
+    ),
+  { dispatch: false }
+);
+
 
   init$ = createEffect(() =>
     of(this.tokens.accessToken()).pipe(

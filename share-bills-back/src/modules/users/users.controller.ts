@@ -22,9 +22,10 @@ import { PendingExpenseBus } from 'src/realtime/pending-expense.bus';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService,
+  constructor(
+    private readonly usersService: UsersService,
     private storage: StorageService,
-    private readonly bus: PendingExpenseBus
+    private readonly bus: PendingExpenseBus,
   ) {}
 
   @UseGuards(AuthGuard('jwt'))
@@ -33,10 +34,12 @@ export class UsersController {
   async getUserAvatar(
     @Req() req: Request & { user?: { userId: number } },
     @UploadedFile() file: Express.Multer.File,
-  ){
+  ) {
     const userId = req.user?.userId;
     if (!userId || isNaN(Number(userId))) {
-      throw new BadRequestException('You have to be logged in to upload an avatar');
+      throw new BadRequestException(
+        'You have to be logged in to upload an avatar',
+      );
     }
     if (!file) {
       throw new BadRequestException('No file provided');
@@ -44,7 +47,7 @@ export class UsersController {
     const { path, url } = await this.storage.uploadUserAvatar(userId, file);
     await this.usersService.updateAvatar(userId, path);
     //! add a dto to return image path and url
-    return {image_path: path, image_url: url};
+    return { image_path: path, image_url: url };
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -61,7 +64,9 @@ export class UsersController {
     return user
       ? {
           ...user,
-          imagePath: user.imagePath ? this.storage.getPublicUrl(user.imagePath) : undefined,
+          imagePath: user.imagePath
+            ? this.storage.getPublicUrl(user.imagePath)
+            : undefined,
         }
       : null;
   }
@@ -78,5 +83,4 @@ export class UsersController {
     }
     return this.usersService.update(userId, user);
   }
-
 }

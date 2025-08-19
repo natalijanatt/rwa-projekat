@@ -4,11 +4,13 @@
 
         <app-form #f="appForm" [form]="form" [submitLabel]="loading ? 'Signing in…' : 'Sign in'" [loading]="loading"
             [cancelLabel]="'Reset'" (formSubmit)="onSubmit($event, form.controls.confirmPassword.value)">
-            <app-input-field label="Name" type="text" [required]="true" [submitted]="f.submitted" [placeholder]="'Enter your name'"
-                [value]="form.controls.name.value" (valueChange)="onInputString('name', $event)"></app-input-field>
+            <app-input-field label="Name" type="text" [required]="true" [submitted]="f.submitted"
+                [placeholder]="'Enter your name'" [value]="form.controls.name.value"
+                (valueChange)="onInputString('name', $event)"></app-input-field>
 
-            <app-input-field label="Email" type="text" [required]="true" [submitted]="f.submitted" [placeholder]="'Enter your email'"
-                [value]="form.controls.email.value" (valueChange)="onInputString('email', $event)"></app-input-field>
+            <app-input-field label="Email" type="text" [required]="true" [submitted]="f.submitted"
+                [placeholder]="'Enter your email'" [value]="form.controls.email.value"
+                (valueChange)="onInputString('email', $event)"></app-input-field>
 
             <app-input-field label="Password" type="password" [required]="true" [submitted]="f.submitted"
                 [value]="form.controls.passwordHash.value" [placeholder]="'Enter your password'"
@@ -18,7 +20,13 @@
                 [value]="form.controls.confirmPassword.value" [placeholder]="'Confirm password'"
                 (valueChange)="onInputString('confirmPassword', $event)"></app-input-field>
 
+
+            <app-image-uploader [emitOnSelect]="true" [disabled]="loading" accept="image/png,image/jpeg,image/webp"
+                label="Avatar" (fileChange)="onAvatarSelected($event)" (error)="onAvatarError($event)">
+            </app-image-uploader>
             <p class="error" *ngIf="error">{{ error }}</p>
+
+
         </app-form>
     </div>
 </div>

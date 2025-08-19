@@ -11,3 +11,12 @@ body{
 }
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.app-modal-panel {
+  border-radius: 12px !important;
+  padding: 16px 20px !important;
+}
+
+.app-modal-backdrop {
+  background: rgba(0, 0, 0, 0.6) !important;
+}

@@ -9,6 +9,7 @@ import { GroupMember } from '../group-members/group-members.entity';
 import { UsersService } from '../users/users.service';
 import { BaseUserDto } from '../users/dto/base-user.dto';
 import { FullGroupDto } from './dto/full-group.dto';
+import { UpdateGroupDto } from './dto/update-group.dto';
 
 @Injectable()
 export class GroupsService {
@@ -82,13 +83,20 @@ export class GroupsService {
         return this.groupMembersService.addMemberToGroup(groupId, userId);
     }
 
+    async updateCover(id: number, avatarPath: string) {
+      return await this.repo.update(
+        { id },
+        { imagePath: avatarPath }
+      )
+  }
     
 
-    // async update(id: number, data: UpdateGroupDto): Promise<Group | null> {
-    //     const group = await this.findOne(id);
-    //     if (!group) return null;
-    //     this.repo.merge(group, data);
-    //     return this.repo.save(group);
-    // }
+    async update(id: number, data: UpdateGroupDto): Promise<BaseGroupDto | null> {
+        const group = await this.findOne(id);
+        if (!group) return null;
+        Object.assign(group, data);
+        const updatedGroup = await this.repo.save(group);
+        return new BaseGroupDto(updatedGroup);
+    }
 
 }

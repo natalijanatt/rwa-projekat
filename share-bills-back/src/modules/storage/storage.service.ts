@@ -44,7 +44,7 @@ export class StorageService {
 
     if (error) throw new BadRequestException(error.message);
 
-    return key;
+    return {path: key, url: this.getPublicUrl(key)};
   }
 
   getPublicUrl(path: string) {

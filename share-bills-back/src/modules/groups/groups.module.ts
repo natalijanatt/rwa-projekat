@@ -7,6 +7,7 @@ import { User } from '../users/user.entity';
 import { UsersService } from '../users/users.service';
 import { GroupMember } from '../group-members/group-members.entity';
 import { GroupMembersService } from '../group-members/group-members.service';
+import { StorageService } from '../storage/storage.service';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { GroupMembersService } from '../group-members/group-members.service';
     GroupsService,
     UsersService,
     GroupMembersService,
+    StorageService
   ],
 })
 export class GroupsModule {}

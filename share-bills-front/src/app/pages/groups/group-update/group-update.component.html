@@ -1,9 +1,9 @@
 <div class="page">
     <div class="card">
-        <h1 class="title">Create a group</h1>
+        <h1 class="title">Update the group: {{group.name}}</h1>
 
-        <app-form #f="appForm" [form]="form" [submitLabel]="loading ? 'Creating…' : 'Create'" [loading]="loading"
-            [cancelLabel]="'Reset'" (formSubmit)="onSubmit($event)">
+        <app-form #f="appForm" [form]="form" [submitLabel]="loading ? 'Updating…' : 'Update'" [loading]="loading"
+             (formSubmit)="onSubmit($event)" (formCancel)="onCancel()">
             <app-input-field label="Name" type="text" [required]="true" [submitted]="f.submitted"
                 [placeholder]="'Enter your name'" [value]="form.controls.name.value"
                 (valueChange)="onInputString('name', $event)"></app-input-field>

@@ -15,6 +15,7 @@ export class FormComponent {
 
   @Input() title = '';
   @Input() submitLabel = 'Submit';
+  @Input() resetLabel = 'Reset';
   @Input() cancelLabel = 'Cancel';
   @Input() loading = false;
   @Input() showError = false;
@@ -34,8 +35,11 @@ export class FormComponent {
     }
     this.formSubmit.emit(this.form.getRawValue());  
   }
-  onCancel(){
+  onReset() {
     this.form.reset();
+    this.submitted = false;
+  }
+  onCancel(){
     this.formCancel.emit();
   }
 

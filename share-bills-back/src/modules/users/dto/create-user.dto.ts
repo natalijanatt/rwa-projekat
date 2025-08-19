@@ -6,7 +6,6 @@ export class CreateUserDto{
     name: string;
     @IsEmail()
     email: string;
-    @IsString()
     imagePath?: string;
     @IsStrongPassword({
         minLength: 8,

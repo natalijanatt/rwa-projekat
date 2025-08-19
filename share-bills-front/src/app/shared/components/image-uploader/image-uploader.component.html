@@ -1,0 +1,54 @@
+<div class="uploader" [class.disabled]="disabled">
+  <label class="uploader__label" *ngIf="label">{{ label }}</label>
+
+  <!-- Preview -->
+  
+
+  <!-- Dropzone -->
+  <div
+    class="uploader__dropzone"
+    [class.dragover]="dragOver()"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave()"
+    (drop)="onDrop($event)"
+    [attr.aria-disabled]="disabled"
+  >
+    <input
+      #fileInput
+      type="file"
+      [accept]="accept"
+      (change)="onFileInput($event)"
+      [disabled]="disabled"
+      hidden
+    />
+
+    <div class="uploader__instructions">
+      <strong>Drag & drop</strong> an image here, or
+      <button type="button" class="link-btn" (click)="onBrowse(fileInput)" [disabled]="disabled">
+        browse
+      </button>
+    </div>
+    <div class="uploader__subtext">
+      Supported: {{ accept }} • Max {{ maxSizeMB }}MB
+    </div>
+
+    <div class="uploader__preview" *ngIf="previewUrl();">
+    <img [src]="previewUrl()!" alt="Selected image preview" />
+  </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="uploader__actions">
+    <button type="button" class="btn" (click)="onBrowse(fileInput)" [disabled]="disabled">Choose</button>
+    <button type="button" class="btn danger" (click)="clear()" [disabled]="disabled || !hasSelection()">Clear</button>
+    <button
+      *ngIf="!emitOnSelect"
+      type="button"
+      class="btn primary"
+      (click)="triggerUpload()"
+      [disabled]="disabled || !hasSelection()"
+    >
+      Upload
+    </button>
+  </div>
+</div>

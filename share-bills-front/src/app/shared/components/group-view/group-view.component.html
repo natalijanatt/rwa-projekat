@@ -1,21 +1,21 @@
-<div class="group-card" *ngIf="group; else loading">
+<div class="group-card" *ngIf="group(); else loading">
   <div class="media">
-    <img [ngSrc]="group.imagePath || 'assets/group-placeholder.webp'" width="320" height="180" alt="{{ group.name }}"
+    <img [ngSrc]="group()?.imagePath || 'assets/group-placeholder.webp'" width="320" height="180" alt="{{ group()?.name }}"
       (error)="onImgError($event)" />
       <div class="actions">
       <button type="button" class="btn" (click)="onUpdate()">Update</button>
       <button type="button" class="btn primary" (click)="onAddExpense()">Add Expense</button>
-      <button type="button" class="btn outline" (click)="onUpdateGroup()">Update Group</button>
+      <button type="button" class="btn" (click)="onAddMember()">Add Member</button>
     </div>
   </div>
 
   <div class="content">
-    <h1 class="title" title="{{ group.name }}">{{ group.name }}</h1>
+    <h1 class="title" title="{{ group()?.name }}">{{ group()?.name }}</h1>
 
     <div class="meta">
       <div class="meta-row">
         <span class="label">Owner:</span>
-        <span class="value">{{ group.owner.name }}</span>
+        <span class="value">{{ group()?.owner?.name }}</span>
       </div>
       <div class="meta-row">
         <span class="label">Member count:</span>
@@ -31,7 +31,7 @@
       </div>
 
       <div class="member-list" role="list" [attr.aria-label]="'Members of ' + group.name">
-        <div class="member-item" *ngFor="let m of members; trackBy: trackByMemberId" role="listitem">
+        <div class="member-item" *ngFor="let m of group()?.members; trackBy: trackByMemberId" role="listitem">
           <img class="avatar" [ngSrc]="m.user.imagePath || 'assets/avatar-placeholder.webp'" width="40" height="40"
             alt="{{ m.user.name || 'Member' }}" (error)="onMemberImgError($event)" />
           <div class="info">

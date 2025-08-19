@@ -1,46 +1,84 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Output, inject, signal } from '@angular/core';
 import { NgIf, NgFor, NgOptimizedImage } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
+import { finalize, map, distinctUntilChanged, switchMap, filter } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';          // 👈 add
+import { GroupService } from '../../../feature/groups/group.service';
 import { GroupFullDto } from '../../../feature/groups/data/group-full.dto';
 import { GroupMemberBaseDto } from '../../../feature/groups/data/group-member-base.dto';
+import { GroupUpdateComponent } from '../../../pages/groups/group-update/group-update.component';
 
 @Component({
   selector: 'app-group-view',
-  imports: [NgIf, NgFor, NgOptimizedImage],
+  standalone: true,
+  imports: [NgIf, NgFor, NgOptimizedImage, MatDialogModule], // 👈 add MatDialogModule
   templateUrl: './group-view.component.html',
   styleUrl: './group-view.component.scss',
 })
 export class GroupViewComponent {
-  @Input() group!: GroupFullDto;
+  private route = inject(ActivatedRoute);
+  private groups = inject(GroupService);
+  private dialog = inject(MatDialog);
 
-  @Output() update = new EventEmitter<GroupFullDto>();
+  group = signal<GroupFullDto | null>(null);
+  loading = signal(false);
+
   @Output() addExpense = new EventEmitter<number>();
   @Output() updateGroup = new EventEmitter<number>();
 
-  onImgError(e: Event) {
-    const img = e.target as HTMLImageElement;
-    img.src = 'assets/avatar-placeholder.webp';
-  }
-  onMemberImgError(e: Event) {
-    const img = e.target as HTMLImageElement;
-    img.src = 'assets/avatar-placeholder.webp';
+  ngOnInit() {
+    this.route.paramMap
+      .pipe(
+        map(pm => pm.get('id') ?? pm.get('groupId')),
+        map(id => id ? Number(id) : NaN),
+        filter(id => Number.isFinite(id) && id > 0),
+        distinctUntilChanged(),
+        switchMap(id => {
+          this.loading.set(true);
+          return this.groups.getGroupById(id).pipe(finalize(() => this.loading.set(false)));
+        }),
+      )
+      .subscribe({
+        next: g => this.group.set(g),
+        error: err => console.error('Failed to load group', err),
+      });
   }
 
-  get membersCount(): number {
-    return this.group?.members?.length ?? 0;
-  }
-  get members(): GroupMemberBaseDto[] {
-    return this.group?.members ?? [];
-  }
+  onImgError(e: Event) { (e.target as HTMLImageElement).src = 'assets/avatar-placeholder.webp'; }
+  onMemberImgError(e: Event) { (e.target as HTMLImageElement).src = 'assets/avatar-placeholder.webp'; }
 
-  trackByMemberId = (_: number, m: GroupMemberBaseDto) => m.id;
-
+  get membersCount(): number { return this.group()?.members?.length ?? 0; }
+  trackByMemberId(index: number, member: GroupMemberBaseDto): number {
+    return member.id;
+  }
   onUpdate() {
-    this.update.emit(this.group);
+    const g = this.group();
+    if (!g) return;
+
+    const ref = this.dialog.open(GroupUpdateComponent, {
+      data: { group: g },
+      disableClose: false,
+      width: '720px',
+      panelClass: 'app-modal-panel',
+      backdropClass: 'app-modal-backdrop',
+    });
+
+    ref.afterClosed().subscribe(result => {
+      if (result === 'updated') this.refreshCurrent();
+    });
   }
-  onAddExpense() {
-    this.addExpense.emit(this.group.id);
+
+  private refreshCurrent() {
+    const g = this.group();
+    if (!g) return;
+    this.loading.set(true);
+    this.groups.getGroupById(g.id).pipe(finalize(() => this.loading.set(false))).subscribe({
+      next: v => this.group.set(v),
+      error: err => console.error('Failed to refresh group', err),
+    });
   }
-  onUpdateGroup() {
-    this.updateGroup.emit(this.group.id);
-  }
+
+  onAddExpense() { const g = this.group(); if (g) this.addExpense.emit(g.id); }
+  onAddMember() { const g = this.group(); if (g) this.updateGroup.emit(g.id); }
 }

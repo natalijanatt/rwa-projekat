@@ -40,7 +40,7 @@ export class GroupCardComponent {
 
   onImgError(e: Event) {
     const img = e.target as HTMLImageElement;
-    img.src = 'assets/group-fallback.png';
+    img.src = '';
     img.classList.add('img-fallback');
   }
 
