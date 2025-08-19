@@ -8,6 +8,7 @@ import { FullUserDto } from './dto/full-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
+import { FilterUserDto } from './dto/filter-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -16,10 +17,17 @@ export class UsersService {
     private readonly repo: Repository<User>,
   ) {}
 
-  async findAll(): Promise<BaseUserDto[]> {
-    const res: User[] = await this.repo.find();
-    const safe: BaseUserDto[] = res.map((r) => new BaseUserDto(r));
-    return safe;
+  async findAll(filter? : FilterUserDto): Promise<BaseUserDto[]> {
+    const res = await this.repo.createQueryBuilder('user')
+      .select(['user.id', 'user.name', 'user.email', 'user.imagePath'])
+      .where(filter?.query ? 'user.name LIKE :query OR user.email LIKE :query' : '1=1', {
+        query: `%${filter?.query ?? ''}%`,
+      })
+      .take(5)
+      .orderBy('user.name', 'DESC')
+      .getMany();
+
+    return res.map((r) => new BaseUserDto(r));
   }
 
   async findOne(id: number): Promise<FullUserDto | null> {

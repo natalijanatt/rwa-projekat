@@ -10,6 +10,7 @@ import {
   Post,
   UseInterceptors,
   UploadedFile,
+  Query,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { UsersService } from './users.service';
@@ -19,6 +20,8 @@ import { FullUserDto } from './dto/full-user.dto';
 import { StorageService } from '../storage/storage.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PendingExpenseBus } from 'src/realtime/pending-expense.bus';
+import { BaseUserDto } from './dto/base-user.dto';
+import { FilterUserDto } from './dto/filter-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -28,26 +31,25 @@ export class UsersController {
     private readonly bus: PendingExpenseBus,
   ) {}
 
+
   @UseGuards(AuthGuard('jwt'))
-  @UseInterceptors(FileInterceptor('file'))
-  @Post('avatar')
-  async getUserAvatar(
+  @Get()
+  async findAll(
     @Req() req: Request & { user?: { userId: number } },
-    @UploadedFile() file: Express.Multer.File,
-  ) {
+    @Query('query') query: string,
+  ): Promise<BaseUserDto[]> {
+    console.log('findAll users', query);
     const userId = req.user?.userId;
     if (!userId || isNaN(Number(userId))) {
-      throw new BadRequestException(
-        'You have to be logged in to upload an avatar',
-      );
+      throw new BadRequestException('Invalid or missing user id in JWT');
     }
-    if (!file) {
-      throw new BadRequestException('No file provided');
-    }
-    const { path, url } = await this.storage.uploadUserAvatar(userId, file);
-    await this.usersService.updateAvatar(userId, path);
-    //! add a dto to return image path and url
-    return { image_path: path, image_url: url };
+    const filter: FilterUserDto = { query };
+    
+    const users = await this.usersService.findAll(filter);
+    return users.map(user => ({
+      ...user,
+      imagePath: user.imagePath ? this.storage.getPublicUrl(user.imagePath) : undefined,
+    }));
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -82,5 +84,27 @@ export class UsersController {
       throw new BadRequestException('Invalid or missing user id in JWT');
     }
     return this.usersService.update(userId, user);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @UseInterceptors(FileInterceptor('file'))
+  @Post('avatar')
+  async getUserAvatar(
+    @Req() req: Request & { user?: { userId: number } },
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    const userId = req.user?.userId;
+    if (!userId || isNaN(Number(userId))) {
+      throw new BadRequestException(
+        'You have to be logged in to upload an avatar',
+      );
+    }
+    if (!file) {
+      throw new BadRequestException('No file provided');
+    }
+    const { path, url } = await this.storage.uploadUserAvatar(userId, file);
+    await this.usersService.updateAvatar(userId, path);
+    //! add a dto to return image path and url
+    return { image_path: path, image_url: url };
   }
 }

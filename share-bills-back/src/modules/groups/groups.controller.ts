@@ -155,7 +155,7 @@ export class GroupsController {
       throw new BadRequestException('Invalid group or member ID');
     }
 
-    const validated = await this.groupsService.checkOwnership(
+    const validated = await this.groupsService.checkMembership(
       req.user.userId,
       +groupId,
     );
@@ -163,6 +163,17 @@ export class GroupsController {
       throw new ForbiddenException(
         'You do not have permission to add members to this group',
       );
+
+    const memberExists = await this.groupsService.checkMembership(
+      +memberId,
+      +groupId,
+    );
+
+    if (memberExists) {
+      throw new BadRequestException(
+        'User is already a member of this group',
+      );
+    }
 
     return this.groupsService.addMemberToGroup(+groupId, +memberId);
   }

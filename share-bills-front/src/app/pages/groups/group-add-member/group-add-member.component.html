@@ -1,0 +1,45 @@
+<div class="page">
+    <div class="wrapper">
+
+        <h2 mat-dialog-title>Add member to "{{ group.name }}"</h2>
+
+        <div class="content" mat-dialog-content>
+            <mat-form-field appearance="outline" class="w-full outline-purple">
+                <mat-label>Search users</mat-label>
+                <input matInput [formControl]="searchCtrl" placeholder="Type a name or email…" autocomplete="off" />
+                <button *ngIf="searchCtrl.value" matSuffix mat-icon-button aria-label="Clear"
+                    (click)="searchCtrl.setValue('', {emitEvent: true})">
+                    <mat-icon>close</mat-icon>
+                </button>
+            </mat-form-field>
+
+            <div class="spinner" *ngIf="loading">
+                <mat-progress-spinner mode="indeterminate" diameter="24"></mat-progress-spinner>
+            </div>
+
+            <mat-nav-list *ngIf="(results$ | async) as results">
+                <ng-container *ngIf="results.length; else noResults">
+                    <a mat-list-item *ngFor="let u of results; trackBy: trackById" (click)="onMemberSelected(u)">
+                        <mat-icon matListItemIcon>person_add</mat-icon>
+                        <div matListItemTitle>{{ displayUser(u) }}</div>
+                        <div matListItemLine *ngIf="u.email">{{ u.email }}</div>
+                        <mat-icon matListItemMeta *ngIf="selectedMember?.id === u.id">check</mat-icon>
+                    </a>
+                </ng-container>
+            </mat-nav-list>
+
+            <ng-template #noResults>
+                <div class="muted" *ngIf="!loading && (searchCtrl.value?.trim()?.length ?? 0) >= 2">No users found.
+                </div>
+            </ng-template>
+
+            <div class="error" *ngIf="error">{{ error }}</div>
+        </div>
+
+        <div mat-dialog-actions align="end" class="actions">
+            <app-button [label]="'Cancel'" [variant]="'secondary'" mat-button (click)="onCancel()"/>
+            <app-button [label]="'Add member'" mat-flat-button [variant]="'primary'" (click)="onSubmit()" [disabled]="!selectedMember || loading"/>
+        </div>
+
+    </div>
+</div>

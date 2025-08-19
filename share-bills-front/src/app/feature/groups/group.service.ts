@@ -53,6 +53,19 @@ export class GroupService {
         );
     }
 
+    addMemberToGroup(groupId: number, userId: number) {
+        const url = `${this.base}/groups/${groupId}/new-member/${userId}`;
+
+        return this.http.post<any>(url, {}).pipe(
+            catchError((err: HttpErrorResponse) => {
+                const msg =
+                    (Array.isArray(err.error?.message) ? err.error.message.join(', ') : err.error?.message) ||
+                    err.message || 'Adding member to group failed';
+                return throwError(() => ({ ...err, friendlyMessage: msg }));
+            })
+        );
+    }
+
     private toFormData(dto: GroupCreateDto, image: File): FormData {
         const fd = new FormData();
         Object.entries(dto).forEach(([k, v]) => {
