@@ -38,7 +38,6 @@ export class UsersController {
     @Req() req: Request & { user?: { userId: number } },
     @Query('query') query: string,
   ): Promise<BaseUserDto[]> {
-    console.log('findAll users', query);
     const userId = req.user?.userId;
     if (!userId || isNaN(Number(userId))) {
       throw new BadRequestException('Invalid or missing user id in JWT');

@@ -5,7 +5,6 @@ import {
   ExpenseParticipant,
   ParticipantStatus,
 } from './expense-participants.entity';
-
 import { from, switchMap, timer } from 'rxjs';
 import { map, takeWhile } from 'rxjs/operators';
 import { ExpensesService } from '../expenses/expenses.service';
@@ -85,7 +84,7 @@ export class ExpenseParticipantsService {
       await participantRepo
         .createQueryBuilder()
         .update(ExpenseParticipant)
-        .set({ status, respondedAt: () => 'now()' })
+        .set({ status, respondedAt: () => 'now()' , hasMissed: false})
         .where('expense_id = :expenseId', { expenseId })
         .andWhere('member_id = :memberId', { memberId })
         .execute();
@@ -180,7 +179,7 @@ export class ExpenseParticipantsService {
       await participantRepo
         .createQueryBuilder()
         .update(ExpenseParticipant)
-        .set({ status: ParticipantStatus.Declined, respondedAt: () => 'now()' })
+        .set({ status: ParticipantStatus.Declined })
         .where('expense_id = :expenseId', { expenseId: exp.id })
         .andWhere('status = :pending', { pending: ParticipantStatus.Pending })
         .execute();
@@ -235,4 +234,16 @@ export class ExpenseParticipantsService {
       .andWhere('p.status = :status', { status: ParticipantStatus.Pending })
       .getMany();
   }
+
+  // findMissedExpensesForUser(userId: number) {
+  //   return this.repo
+  //     .createQueryBuilder('p')
+  //     .leftJoinAndSelect('p.expense', 'expense')
+  //     .innerJoin('p.member', 'member')
+  //     .leftJoinAndSelect('member.user', 'user')
+  //     .where('user.id = :userId', { userId })
+  //     .andWhere('p.status = :status', { status: ParticipantStatus.Declined })
+  //     .andWhere('expense.finalized_at IS NOT NULL')
+  //     .getMany();
+  // }
 }

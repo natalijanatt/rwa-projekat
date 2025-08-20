@@ -3,7 +3,7 @@ import { Component, DestroyRef, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ExpenseStreamService, PendingExpenseEvent } from './expense-stream.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 
 import { MatDialogModule } from '@angular/material/dialog';
 import { AsyncPipe, CurrencyPipe, NgIf } from '@angular/common';
@@ -16,6 +16,8 @@ import { AsyncPipe, CurrencyPipe, NgIf } from '@angular/common';
       <div class="grid gap-2">
         <div class="font-semibold">{{data.event.expense.title}}</div>
         <div>Amount: {{data.event.expense.amount | currency}}</div>
+        <div>Group:</div>
+        <div>Paid by</div>
         <div class="text-sm opacity-70" *ngIf="remaining$ | async as r">Time left: {{r}}s</div>
       </div>
     </mat-dialog-content>
@@ -40,9 +42,19 @@ export class ExpenseReviewDialogComponent {
   memberId = this.data.event.me.memberId;
 
   remaining$ = this.svc.countdown$(this.data.event.expense.id).pipe(
-    map(t => t.remainingSeconds),
-    takeUntilDestroyed(this.destroyRef)
-  );
+  map(t => {
+    const totalSeconds = Math.floor(t.msLeft / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}.${seconds.toString().padStart(2, '0')}`;
+  }),
+  tap(display => {
+    if (display === '0.00') {
+      this.ref.close(false);
+    }
+  }),
+  takeUntilDestroyed(this.destroyRef)
+);
 
   
   vote(status: 'accepted'|'declined') {

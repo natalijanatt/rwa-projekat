@@ -1,13 +1,21 @@
 import {
-  Entity, PrimaryGeneratedColumn, Column, ManyToOne, Index, Unique, Check, CreateDateColumn, JoinColumn
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  Index,
+  Unique,
+  Check,
+  CreateDateColumn,
+  JoinColumn,
 } from 'typeorm';
 import { Expense } from '../expenses/expense.entity';
 import { GroupMember } from '../group-members/group-members.entity';
 export enum ParticipantStatus {
-  Pending  = 'pending',
+  Pending = 'pending',
   Accepted = 'accepted',
   Declined = 'declined',
-  Removed  = 'removed',
+  Removed = 'removed',
 }
 
 @Entity({ name: 'expense_participants' })
@@ -15,7 +23,7 @@ export enum ParticipantStatus {
 @Check(
   'chk_part_responded_at',
   `(status = 'pending' AND responded_at IS NULL)
-   OR (status IN ('accepted','declined','removed') AND responded_at IS NOT NULL)`
+   OR (status IN ('accepted','declined','removed') AND responded_at IS NOT NULL)`,
 )
 @Index('ix_participants_expense', ['expenseId'])
 @Index('ix_participants_member', ['memberId'])
@@ -39,33 +47,41 @@ export class ExpenseParticipant {
   @Column({ type: 'text', default: ParticipantStatus.Pending })
   status!: ParticipantStatus;
 
-  @CreateDateColumn({ name: 'invited_at', type: 'timestamptz', default: () => 'now()' })
+  @CreateDateColumn({
+    name: 'invited_at',
+    type: 'timestamptz',
+    default: () => 'now()',
+  })
   invitedAt!: Date;
 
   @Column({ name: 'responded_at', type: 'timestamptz', nullable: true })
   respondedAt: Date | null = null;
 
-  // Composite FK to Expense: (expense_id, group_id) -> (Expense.id, Expense.groupId)
+  @Column({ name: 'has_missed', type: 'boolean', default: true })
+  hasMissed: boolean;
+
   @ManyToOne(() => Expense, (e) => e.participants, { onDelete: 'CASCADE' })
   @JoinColumn([
     { name: 'expense_id', referencedColumnName: 'id' },
-    { name: 'group_id',   referencedColumnName: 'groupId' },
+    { name: 'group_id', referencedColumnName: 'groupId' },
   ])
   expense!: Expense;
 
-  // Composite FK to GroupMember: (member_id, group_id) -> (GroupMember.id, GroupMember.groupId)
-  @ManyToOne(() => GroupMember, (m) => m.participations, { onDelete: 'CASCADE' })
+  @ManyToOne(() => GroupMember, (m) => m.participations, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn([
     { name: 'member_id', referencedColumnName: 'id' },
-    { name: 'group_id',  referencedColumnName: 'groupId' },
+    { name: 'group_id', referencedColumnName: 'groupId' },
   ])
   member!: GroupMember;
 
-  // Composite FK to inviter: (invited_by_member_id, group_id) -> (GroupMember.id, GroupMember.groupId)
-  @ManyToOne(() => GroupMember, (m) => m.invitedParticipations, { onDelete: 'RESTRICT' })
+  @ManyToOne(() => GroupMember, (m) => m.invitedParticipations, {
+    onDelete: 'RESTRICT',
+  })
   @JoinColumn([
     { name: 'invited_by_member_id', referencedColumnName: 'id' },
-    { name: 'group_id',             referencedColumnName: 'groupId' },
+    { name: 'group_id', referencedColumnName: 'groupId' },
   ])
   invitedBy!: GroupMember;
 }

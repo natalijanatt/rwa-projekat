@@ -23,7 +23,7 @@ import {
   ParticipantStatus,
 } from '../expense-participants/expense-participants.entity';
 import { PendingExpenseBus } from 'src/realtime/pending-expense.bus';
-import { concatMap, from, interval, map, merge, Observable, tap } from 'rxjs';
+import { concatMap, from, map, merge, Observable, tap } from 'rxjs';
 import { PendingExpenseEvent } from './dto/pending-expense-event';
 import type { Response } from 'express';
 

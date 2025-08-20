@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Output, inject, signal } from '@angular/core';
-import { NgIf, NgFor, NgOptimizedImage } from '@angular/common';
+import { NgIf, NgFor, NgOptimizedImage, NgClass } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import {
   finalize,
@@ -8,18 +8,18 @@ import {
   switchMap,
   filter,
 } from 'rxjs/operators';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog'; // 👈 add
 import { GroupService } from '../../../feature/groups/group.service';
 import { GroupFullDto } from '../../../feature/groups/data/group-full.dto';
 import { GroupMemberBaseDto } from '../../../feature/groups/data/group-member-base.dto';
 import { GroupUpdateComponent } from '../../../pages/groups/group-update/group-update.component';
 import { GroupAddMemberComponent } from '../../../pages/groups/group-add-member/group-add-member.component';
+import { ExpenseCreateComponent } from '../expense-create/expense-create.component';
 
 @Component({
   selector: 'app-group-view',
   standalone: true,
-  imports: [NgIf, NgFor, NgOptimizedImage, MatDialogModule],
+  imports: [NgIf, NgFor, NgClass, NgOptimizedImage, MatDialogModule],
   templateUrl: './group-view.component.html',
   styleUrl: './group-view.component.scss',
 })
@@ -102,6 +102,23 @@ export class GroupViewComponent {
     });
   }
 
+  onAddExpense() {
+    const g = this.group();
+    if (!g) return;
+
+    const ref = this.dialog.open(ExpenseCreateComponent, {
+      data: { group: g },
+      disableClose: false,
+      width: '720px',
+      panelClass: 'app-modal-panel',
+      backdropClass: 'app-modal-backdrop',
+    });
+
+    ref.afterClosed().subscribe((result) => {
+      if (result === 'added') this.refreshCurrent();
+    });
+  }
+
   private refreshCurrent() {
     const g = this.group();
     if (!g) return;
@@ -115,8 +132,18 @@ export class GroupViewComponent {
       });
   }
 
-  onAddExpense() {
+  memberBalance(member: GroupMemberBaseDto): { status: string; owed: boolean } {
     const g = this.group();
-    if (g) this.addExpense.emit(g.id);
+
+    if (!g) return { status: 'Loading...', owed: false };
+    const balance = g.balances.find((b) => b.toMemberId === member.id);
+    if (!balance) return { status: 'Me', owed: false };
+
+    if (Number(balance.balance) === 0)
+      return { status: 'Settled', owed: false };
+
+    if (balance.balance < 0)
+      return { status: `ows $${Math.abs(balance.balance)}`, owed: false };
+    return { status: 'owed $' + balance.balance, owed: true };
   }
 }

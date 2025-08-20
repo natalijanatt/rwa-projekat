@@ -44,7 +44,6 @@ export class ExpenseStreamService {
   private http = inject(HttpClient);
   private auth = inject(TokenState);
   private store = inject(Store);
-  private userId: number | null = null;
   pending$: Observable<PendingExpenseEvent> | null = null;
 
   // Local bus to prevent duplicate dialogs per expenseId
@@ -107,11 +106,10 @@ connect(): Observable<PendingExpenseEvent> {
   }
 
   // Countdown stream per expense
-  countdown$(expenseId: number): Observable<CountdownTick> {
+  countdown$(expenseId: number): Observable<any> {
     const url = environment.apiUrl + `/expenses/countdown/${expenseId}`;
-    return sse$<{ expenseId: number; remainingSeconds: number }>(url).pipe(
+    return sse$<{ msLeft: number; finalized: boolean }>(url).pipe(
       withBackoff(10, 500),
-      map((d) => ({ expenseId, remainingSeconds: d.remainingSeconds })),
       shareReplay({ refCount: true, bufferSize: 1 })
     );
   }

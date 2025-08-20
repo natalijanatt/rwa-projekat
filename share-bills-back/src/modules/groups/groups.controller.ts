@@ -74,7 +74,7 @@ export class GroupsController {
     const validated = await this.groupsService.checkMembership(userId, +id);
     if (!validated)
       throw new ForbiddenException('You do not have access to this resource');
-    const group = await this.groupsService.findOne(+id);
+    const group = await this.groupsService.findOne(+id, userId);
 
     return group
       ? {

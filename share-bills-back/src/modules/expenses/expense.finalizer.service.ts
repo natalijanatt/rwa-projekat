@@ -1,5 +1,11 @@
 // expense.finalizer.service.ts
-import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -14,7 +20,8 @@ export class ExpenseFinalizerService implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     @Inject(ModuleRef) private readonly moduleRef: ModuleRef,
-    @InjectRepository(Expense) private readonly expenseRepo: Repository<Expense>,
+    @InjectRepository(Expense)
+    private readonly expenseRepo: Repository<Expense>,
   ) {}
 
   private async getParticipants() {
@@ -30,46 +37,50 @@ export class ExpenseFinalizerService implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleInit() {
-  const open = await this.expenseRepo.createQueryBuilder('e')
-    .select(['e.id', 'e.acceptanceDeadline'])
-    .where('e.finalizedAt IS NULL')
-    .getMany();
+    const open = await this.expenseRepo
+      .createQueryBuilder('e')
+      .select(['e.id', 'e.acceptanceDeadline'])
+      .where('e.finalizedAt IS NULL')
+      .getMany();
 
-  const now = Date.now();
-  const future = open.filter(e => new Date(e.acceptanceDeadline).getTime() > now);
-  const expired = open.filter(e => new Date(e.acceptanceDeadline).getTime() <= now);
+    const now = Date.now();
+    const future = open.filter(
+      (e) => new Date(e.acceptanceDeadline).getTime() > now,
+    );
+    const expired = open.filter(
+      (e) => new Date(e.acceptanceDeadline).getTime() <= now,
+    );
 
-  // schedule only future deadlines
-  for (const e of future) this.schedule(e.id, new Date(e.acceptanceDeadline));
+    // schedule only future deadlines
+    for (const e of future) this.schedule(e.id, new Date(e.acceptanceDeadline));
 
-  // process expired in small batches to avoid DB pool stampede
-  this.drainExpiredQueue(expired.map(e => e.id));
-}
+    // process expired in small batches to avoid DB pool stampede
+    await this.drainExpiredQueue(expired.map((e) => e.id));
+  }
 
-private draining = false;
+  private draining = false;
 
-private async drainExpiredQueue(ids: number[], concurrency = 2, gapMs = 250) {
-  if (this.draining || ids.length === 0) return;
-  this.draining = true;
+  private async drainExpiredQueue(ids: number[], concurrency = 2, gapMs = 250) {
+    if (this.draining || ids.length === 0) return;
+    this.draining = true;
 
-  const queue = [...ids];
-  const workers = Array.from({ length: concurrency }, async () => {
-    while (queue.length) {
-      const id = queue.shift()!;
-      try {
-        const participants = await this.getParticipants();
-        await participants.finalizeIfExpired(id, { force: true });
-      } catch (e) {
-        this.log.warn(`Boot finalize failed for ${id}: ${String(e)}`);
+    const queue = [...ids];
+    const workers = Array.from({ length: concurrency }, async () => {
+      while (queue.length) {
+        const id = queue.shift()!;
+        try {
+          const participants = await this.getParticipants();
+          await participants.finalizeIfExpired(id, { force: true });
+        } catch (e) {
+          this.log.warn(`Boot finalize failed for ${id}: ${String(e)}`);
+        }
+        await new Promise((r) => setTimeout(r, gapMs)); // gentle pacing
       }
-      await new Promise(r => setTimeout(r, gapMs)); // gentle pacing
-    }
-  });
+    });
 
-  await Promise.all(workers);
-  this.draining = false;
-}
-
+    await Promise.all(workers);
+    this.draining = false;
+  }
 
   onModuleDestroy() {
     for (const [, t] of this.timers) clearTimeout(t);
@@ -82,9 +93,9 @@ private async drainExpiredQueue(ids: number[], concurrency = 2, gapMs = 250) {
         ? Math.max(0, deadlineOrDelay)
         : Math.max(0, new Date(deadlineOrDelay).getTime() - Date.now());
 
-        const min = 1000;                 // at least 1s
-  const jitter = Math.floor(Math.random() * 1000); // +0..999ms
-  const delay = Math.max(min, baseDelay) + jitter;
+    const min = 1000; // at least 1s
+    const jitter = Math.floor(Math.random() * 1000); // +0..999ms
+    const delay = Math.max(min, baseDelay) + jitter;
     this.cancel(expenseId);
 
     const timer = setTimeout(() => {
@@ -93,7 +104,9 @@ private async drainExpiredQueue(ids: number[], concurrency = 2, gapMs = 250) {
           const participants = await this.getParticipants();
           await participants.finalizeIfExpired(expenseId, { force: true });
         } catch (e) {
-          this.log.warn(`Finalize timer failed for expense ${expenseId}: ${String(e)}`);
+          this.log.warn(
+            `Finalize timer failed for expense ${expenseId}: ${String(e)}`,
+          );
         } finally {
           this.timers.delete(expenseId);
         }

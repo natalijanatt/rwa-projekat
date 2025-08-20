@@ -1,0 +1,59 @@
+<div class="page">
+  <div class="card">
+    <h1 class="title">Add to "{{ group.name }}"</h1>
+
+    <app-form #f="appForm" [form]="form"
+      [submitLabel]="loading ? 'Creating…' : (type() === 'transfer' ? 'Send transfer' : 'Add expense')"
+      [loading]="loading" (formSubmit)="onSubmit()" (formCancel)="onCancel()">
+      <!-- Type switch -->
+      <div class="row type-switch">
+        <button type="button" class="chip" [class.active]="type() === 'expense'"
+          (click)="setType('expense')">
+          Expense
+        </button>
+        <button type="button" class="chip" [class.active]="type() === 'transfer'"
+          (click)="setType('transfer')">
+          Transfer
+        </button>
+      </div>
+
+      <!-- Title -->
+      <app-input-field label="Title" type="text" [required]="true" [submitted]="f.submitted"
+        [placeholder]="'e.g. Groceries, Rent, Coffee…'" [value]="form.controls.title.value ?? ''"
+        (valueChange)="onInputString('title', $event)">
+      </app-input-field>
+
+      <!-- Amount -->
+      <app-input-field label="Amount" type="number" [required]="true" [submitted]="f.submitted" [placeholder]="'0.00'"
+        [value]="form.controls.amount.value ?? 0" (valueChange)="onInputNumber('amount', $event)">
+      </app-input-field>
+
+
+      <!-- Member selection -->
+      <div class="section" *ngIf="type() === 'transfer'">
+        <div class="section-title">Paid to</div>
+        <div class="members">
+          <label class="member" *ngFor="let m of members" [class.selected]="selectedMember?.id === m.id">
+            <input #cb type="checkbox" [checked]="selectedMember?.id === m.id"
+              (change)="onToggleMember(m, cb.checked)" />
+            <span class="avatar">
+              <img [src]="m.user.imagePath ? m.user.imagePath : 'assets/avatar-placeholder.webp'" alt="" />
+            </span>
+            <span class="name">{{ m.user.name }}</span>
+
+            <!-- optional small clear button on the selected row -->
+            <button type="button" class="clear" *ngIf="selectedMember?.id === m.id" (click)="onToggleMember(m, false)"
+              aria-label="Clear selection">×</button>
+          </label>
+        </div>
+
+        <div class="hint">
+          {{ selectedMember ? ('Selected: ' + (selectedMember.user.name || ('Member #' + selectedMember.id))) : 'Select
+          who receives the money' }}
+        </div>
+      </div>
+
+      <p class="error" *ngIf="error">{{ error }}</p>
+    </app-form>
+  </div>
+</div>

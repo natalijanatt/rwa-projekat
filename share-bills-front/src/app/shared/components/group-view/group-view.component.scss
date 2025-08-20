@@ -201,8 +201,15 @@
         background: #e5e7eb;
       }
 
+      .member-info{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 0.25rem;
+      }
+
       .info {
-        min-width: 0; /* enable text ellipsis */
+        min-width: 0;
         .name {
           font-weight: 400;
           color: white;
@@ -213,6 +220,15 @@
           color: #667085;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
+      }
+
+      .balance-red {
+        color: #dc2626;
+        font-weight: 300;
+      }
+      .balance-green {
+        color: #16a34a;
+        font-weight: 300;
       }
     }
 

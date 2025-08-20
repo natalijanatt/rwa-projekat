@@ -1,8 +1,8 @@
 <div class="group-card" *ngIf="group(); else loading">
   <div class="media">
-    <img [ngSrc]="group()?.imagePath || 'assets/group-placeholder.webp'" width="320" height="180" alt="{{ group()?.name }}"
-      (error)="onImgError($event)" />
-      <div class="actions">
+    <img [ngSrc]="group()?.imagePath || 'assets/group-placeholder.webp'" width="320" height="180"
+      alt="{{ group()?.name }}" (error)="onImgError($event)" />
+    <div class="actions">
       <button type="button" class="btn" (click)="onUpdate()">Update</button>
       <button type="button" class="btn primary" (click)="onAddExpense()">Add Expense</button>
       <button type="button" class="btn" (click)="onAddMember()">Add Member</button>
@@ -34,9 +34,14 @@
         <div class="member-item" *ngFor="let m of group()?.members; trackBy: trackByMemberId" role="listitem">
           <img class="avatar" [ngSrc]="m.user.imagePath || 'assets/avatar-placeholder.webp'" width="40" height="40"
             alt="{{ m.user.name || 'Member' }}" (error)="onMemberImgError($event)" />
-          <div class="info">
-            <div class="name" [title]="m.user.name">{{ m.user.name }}</div>
-            <div class="email" [title]="m.user.email">{{ m.user.email }}</div>
+          <div class="member-info">
+            <div class="info">
+              <div class="name" [title]="m.user.name">{{ m.user.name }}</div>
+              <div class="email" [title]="m.user.email">{{ m.user.email }}</div>
+            </div>
+            <div [ngClass]="memberBalance(m).owed ? 'balance-red' : 'balance-green'">
+              {{ memberBalance(m).status }}
+            </div>
           </div>
         </div>
 
@@ -44,7 +49,7 @@
       </div>
     </div>
 
-    
+
   </div>
 </div>
 
