@@ -1,0 +1,21 @@
+<div class="grid" *ngIf="expenses?.length; else empty">
+  <app-expense-card
+    *ngFor="let e of expenses; trackBy: trackById"
+    [title]="e.title"
+    [expenseId]="e.id"
+    [amount]="e.amount"
+    [currencyCode]="currencyCode"
+    [buttonLabel]="buttonLabel"
+    [accentFrom]="palette(e).from"
+    [accentVia]="palette(e).via"
+    [accentTo]="palette(e).to"
+    (buttonClicked)="onOpen(e)"
+  />
+</div>
+
+<ng-template #empty>
+  <div class="empty-state">
+    <div class="title">No expenses yet</div>
+    <div class="subtitle">When you add expenses, they’ll show up here.</div>
+  </div>
+</ng-template>

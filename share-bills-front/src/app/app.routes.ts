@@ -89,7 +89,22 @@ export const routes: Routes = [
         (m) => m.GroupsAllComponent
       ),
   },
-
+  {
+    path: 'expenses/missed',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/expenses/expenses-missed/expenses-missed.component').then(
+        (m) => m.ExpensesMissedComponent
+      ),
+  },
+  {
+    path: 'expenses/my',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/expenses/my-expenses/my-expenses.component').then(
+        (m) => m.MyExpensesComponent
+      ),
+  },
   { path: 'offline', component: OfflineComponent },
   { path: '500', component: Error500Component },
   { path: '**', component: Error404Component },

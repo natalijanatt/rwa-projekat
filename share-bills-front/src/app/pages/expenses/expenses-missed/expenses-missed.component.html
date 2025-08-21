@@ -1,0 +1,40 @@
+<div class="page">
+  <header class="header">
+    <div class="titles">
+      <h1>Missed expenses</h1>
+      <p class="subtitle">Expenses that passed their acceptance window.</p>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn secondary" (click)="reload()">Reload</button>
+    </div>
+  </header>
+
+  <section class="state" *ngIf="loading">
+    <div class="spinner" aria-label="Loading"></div>
+    <div class="state-text">Loading missed expenses…</div>
+  </section>
+
+  <section class="state error" *ngIf="!loading && error">
+    <div class="state-text">Error: {{ error }}</div>
+    <button type="button" class="btn primary" (click)="reload()">Try again</button>
+  </section>
+
+  <section *ngIf="!loading && !error">
+    <div class="count" *ngIf="expenses?.length">
+      <span>{{ expenses.length }}</span> total
+    </div>
+
+    <app-expense-grid
+      [expenses]="expenses"
+      currencyCode="EUR"
+      buttonLabel="Review"
+      (openExpense)="onOpenExpense($event)"
+    ></app-expense-grid>
+
+    <div class="empty" *ngIf="!expenses?.length">
+      <div class="title">No missed expenses 🎉</div>
+      <div class="subtitle">You’re all caught up.</div>
+    </div>
+  </section>
+</div>

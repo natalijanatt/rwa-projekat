@@ -1,60 +1,47 @@
-<div class="profile">
-  <!-- Loading / skeleton -->
-  <div class="card skeleton" *ngIf="!user">
-    <div class="card-header">
-      <div class="avatar skeleton-box"></div>
-      <div class="titles">
-        <div class="line skeleton-box w-160"></div>
-        <div class="line skeleton-box w-220"></div>
-      </div>
-    </div>
-    <div class="card-body">
-      <div class="row">
-        <div class="label skeleton-box w-80"></div>
-        <div class="value skeleton-box w-200"></div>
-      </div>
-      <div class="row">
-        <div class="label skeleton-box w-80"></div>
-        <div class="value skeleton-box w-240"></div>
-      </div>
-      <div class="row">
-        <div class="label skeleton-box w-120"></div>
-        <div class="value skeleton-box w-160"></div>
-      </div>
-    </div>
+<div class="page">
+  <!-- Loading -->
+  <div class="card" *ngIf="!user">
+    <h2 class="title">Loading profile…</h2>
   </div>
 
-  <!-- Loaded state -->
   <div class="card" *ngIf="user as u">
-    <div class="card-header">
-      <div class="avatar" aria-hidden="true" *ngIf="!u.imagePath">
-        {{ (u.name || u.email).charAt(0) | uppercase }}
-      </div>
-      <img class="avatar" *ngIf="u.imagePath" [src]="u.imagePath" alt="User Avatar" />
-      <div class="titles">
-        <h1 class="title">{{ u.name || 'User' }}</h1>
-        <p class="subtitle">{{ u.email }}</p>
-      </div>
+    <h1 class="title heading">{{ u.name || 'User' }}</h1>
+
+    <div class="details">
+      <div class="left">
+
+        <ng-container *ngIf="u.imagePath; else initials">
+          <img [src]="u.imagePath" alt="User avatar" style="width:80px;height:80px;border-radius:50%;object-fit:cover" />
+        </ng-container>
+        <ng-template #initials>
+          <div aria-hidden="true"
+          style="width:100%;aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;background:#333;color:#fff">
+          {{ (u.name || u.email).charAt(0) | uppercase }}
+        </div>
+      </ng-template>
+    </div>
+    <div class="right">
+    <div>
+      <div class="title">Email</div>
+      <div style="color:#ddd">{{ u.email }}</div>
     </div>
 
-    <div class="card-body">
-      <div class="row">
-        <div class="label">Full name</div>
-        <div class="value">{{ u.name }}</div>
-      </div>
-      <div class="row">
-        <div class="label">Email</div>
-        <div class="value">{{ u.email }}</div>
-      </div>
-      <div class="row">
-        <div class="label">Member since</div>
-        <div class="value">{{ u.createdAt | date: 'mediumDate' }}</div>
-      </div>
+    <div *ngIf="u.name">
+      <div class="title">Full name</div>
+      <div style="color:#ddd">{{ u.name }}</div>
     </div>
 
-    <div class="card-footer">
-      <button class="btn outline" routerLink="/app">Back to app</button>
-      <button class="btn danger" routerLink="/logout">Log out</button>
+    <div>
+      <div class="title">Member since</div>
+      <div style="color:#ddd">{{ u.createdAt | date:'mediumDate' }}</div>
     </div>
+
+    <!-- Actions -->
+    <div style="display:flex; gap:.5rem; margin-top:.5rem">
+      <app-button label="Update" routerLink="/app"/>
+      <app-button label="Log out" [variant]="'danger'" routerLink="/logout"/>
+    </div>
+    </div>
+     </div>
   </div>
 </div>

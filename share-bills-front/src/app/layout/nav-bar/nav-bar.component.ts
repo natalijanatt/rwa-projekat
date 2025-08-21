@@ -19,6 +19,8 @@ export class NavBarComponent {
     { path: '/',          label: 'Home',      authOnly: false },
     { path: '/me',  label: 'My Profile',  authOnly: true },
     { path: '/groups',  label: 'My Groups',  authOnly: true },
+    { path: 'expenses/my', label: 'My Expenses', authOnly: true },
+    { path: '/expenses/missed', label: 'Missed Expenses', authOnly: true },
   ];
 
   toggle() { this.menuOpen.update(v => !v); }

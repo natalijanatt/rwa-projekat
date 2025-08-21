@@ -1,0 +1,25 @@
+<div
+  class="expense-card"
+  [style.--accent-from]="accentFrom"
+  [style.--accent-via]="accentVia"
+  [style.--accent-to]="accentTo"
+>
+  <div class="banner" aria-hidden="true"></div>
+
+  <div class="content">
+    <div class="row">
+      <div class="meta">
+        <span class="title">{{ title }}</span>
+        <p class="id">ID: {{ expenseId }}</p>
+      </div>
+
+      <span class="amount">
+        {{ amount | currency: currencyCode : 'symbol' }}
+      </span>
+    </div>
+
+    <button type="button" class="primary" (click)="buttonClicked.emit()">
+      {{ buttonLabel }}
+    </button>
+  </div>
+</div>

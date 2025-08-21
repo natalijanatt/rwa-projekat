@@ -1,0 +1,130 @@
+.page {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 1rem;
+  padding: 1rem 0.5rem;
+  color: #e5e7eb; /* gray-200-ish */
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 1rem;
+  padding: 0.5rem 0;
+
+  .titles {
+    h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      line-height: 1.2;
+      font-weight: 700;
+      color: #f9fafb; /* gray-50 */
+    }
+    .subtitle {
+      margin: 0.125rem 0 0;
+      color: #9ca3af; /* gray-400 */
+      font-size: 0.95rem;
+    }
+  }
+
+  .actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+}
+
+/* Buttons */
+.btn {
+  border: 0;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms ease-in-out, opacity 150ms;
+
+  &.primary {
+    background: #0c4a6e; /* sky-800 */
+    color: #f9fafb;
+  }
+
+  &.primary:hover {
+    background: #0369a1; /* sky-700 */
+  }
+
+  &.secondary {
+    background: #374151; /* gray-700 */
+    color: #f9fafb;
+  }
+
+  &.secondary:hover {
+    background: #4b5563; /* gray-600 */
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.count {
+  margin: 0.25rem 0 0.75rem;
+  color: #9ca3af;
+  font-size: 0.95rem;
+
+  span {
+    display: inline-block;
+    min-width: 2ch;
+    text-align: right;
+    font-weight: 700;
+    color: #f9fafb;
+  }
+}
+
+/* Loading/Error states */
+.state {
+  display: grid;
+  place-items: center;
+  gap: 0.5rem;
+  padding: 2rem 0;
+
+  .state-text {
+    color: #d1d5db;
+  }
+
+  &.error .state-text {
+    color: #fca5a5; /* red-300-ish */
+  }
+}
+
+/* Simple spinner */
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #4b5563;     /* gray-600 */
+  border-top-color: #f9fafb;      /* gray-50 */
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Empty state */
+.empty {
+  margin-top: 1rem;
+  border: 1px dashed #374151;
+  border-radius: 0.75rem;
+  padding: 2rem;
+  background: #111827; /* gray-900-ish */
+  text-align: center;
+
+  .title {
+    font-weight: 700;
+    color: #f9fafb;
+  }
+  .subtitle {
+    margin-top: 0.25rem;
+    color: #9ca3af;
+  }
+}

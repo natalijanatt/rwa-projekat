@@ -18,6 +18,7 @@ export class GroupMembersBalanceService {
     acceptedRows: { memberId: number }[],
   ) {
     const memberIds = acceptedRows.map((row) => row.memberId);
+
     // 1) others -> payer += share
     const res1 = await this.repo
       .createQueryBuilder()
@@ -71,6 +72,44 @@ export class GroupMembersBalanceService {
       .andWhere('group_id = :groupId', { expenseId })
       .setParameters({ share, expenseId, paidById, paidToId, groupId })
       .execute();
+  }
+
+  async expenseBalanceForNewParticipant(
+    expenseId: number,
+    amount: number,
+    payerId: number,
+    groupId: number,
+    newMemberId: number,
+    acceptedRows: { memberId: number }[],
+  ) {
+    
+    const numberOfParticipants = acceptedRows.length;
+
+    if (numberOfParticipants === 0) {
+      throw new Error('No participants to balance with');
+    }
+    
+    const oldBalance = -1 * amount /numberOfParticipants;
+    const newBalance = amount/(numberOfParticipants+ 1);
+
+    // 1) remove old balances
+    await this.expenseBalance(
+      expenseId,
+      oldBalance,
+      payerId,
+      groupId,
+      acceptedRows
+    );
+
+    // 2) add new balances
+    acceptedRows.push({ memberId: newMemberId });
+    await this.expenseBalance(
+      expenseId,
+      newBalance,
+      payerId,
+      groupId,
+      acceptedRows
+    );
   }
 
 }

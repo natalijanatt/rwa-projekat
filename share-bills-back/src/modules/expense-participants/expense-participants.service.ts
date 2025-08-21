@@ -8,9 +8,10 @@ import {
 import { from, switchMap, timer } from 'rxjs';
 import { map, takeWhile } from 'rxjs/operators';
 import { ExpensesService } from '../expenses/expenses.service';
-import { Expense } from '../expenses/expense.entity';
+import { Expense, TxnType } from '../expenses/expense.entity';
 import { GroupMembersBalanceService } from '../group-members-balance/group-members-balance.service';
 import { ExpenseFinalizerService } from '../expenses/expense.finalizer.service';
+import { BaseExpenseDto } from '../expenses/dto/base-expense.dto';
 
 @Injectable()
 export class ExpenseParticipantsService {
@@ -31,9 +32,9 @@ export class ExpenseParticipantsService {
       .andWhere('user.id = :userId', { userId })
       .getOne();
 
-      if(!participant || participant?.memberId !== memberId) {
-        return false;
-      }
+    if (!participant || participant?.memberId !== memberId) {
+      return false;
+    }
     return true;
   }
 
@@ -65,10 +66,9 @@ export class ExpenseParticipantsService {
     return this.repo.manager.transaction(async (manager) => {
       const expenseRepo = manager.getRepository(Expense);
       const participantRepo = manager.getRepository(ExpenseParticipant);
-      // Lock the expense row for the duration of this tx
       const exp = await expenseRepo
         .createQueryBuilder('e')
-        .setLock('pessimistic_write') // FOR UPDATE
+        .setLock('pessimistic_write')
         .where('e.id = :expenseId', { expenseId })
         .getOne();
 
@@ -80,16 +80,14 @@ export class ExpenseParticipantsService {
         return { finalized: true, expenseId };
       }
 
-      // Update this participant’s response
       await participantRepo
         .createQueryBuilder()
         .update(ExpenseParticipant)
-        .set({ status, respondedAt: () => 'now()' , hasMissed: false})
+        .set({ status, respondedAt: () => 'now()', hasMissed: false })
         .where('expense_id = :expenseId', { expenseId })
         .andWhere('member_id = :memberId', { memberId })
         .execute();
 
-      // Any pending left?
       const pending = await participantRepo
         .createQueryBuilder('p')
         .where('p.expense_id = :expenseId', { expenseId })
@@ -100,15 +98,12 @@ export class ExpenseParticipantsService {
         return { finalized: false, expenseId };
       }
 
-      // Everyone responded – finalize based on type
       if (String(exp.txnType) === 'expense') {
-        // Count accepted participants (optionally exclude payer)
         const acceptedRows: { memberId: number }[] = await participantRepo
           .createQueryBuilder('p')
           .select('p.member_id', 'memberId')
           .where('p.expense_id = :expenseId', { expenseId })
           .andWhere('p.status = :status', { status: 'accepted' })
-          // If payer should not count toward split, exclude them:
           .andWhere('p.member_id <> :payerId', { payerId: exp.paidById })
           .getRawMany();
 
@@ -122,8 +117,6 @@ export class ExpenseParticipantsService {
 
         const share = Number((Number(exp.amount) / (accepted + 1)).toFixed(2));
 
-        // Use services that operate within the same tx if they run queries;
-        // pass manager/queryRunner through if needed.
         await this.groupMembersBalanceService.expenseBalance(
           expenseId,
           share,
@@ -145,16 +138,14 @@ export class ExpenseParticipantsService {
       const expenseRepo = manager.getRepository(Expense);
       const participantRepo = manager.getRepository(ExpenseParticipant);
 
-      // Lock the expense row for the duration of the tx
       const exp = await expenseRepo
         .createQueryBuilder('e')
-        .setLock('pessimistic_write') // FOR UPDATE
+        .setLock('pessimistic_write')
         .where('e.id = :expenseId', { expenseId })
         .getOne();
 
       if (!exp) throw new BadRequestException('Expense not found');
 
-      // Already finalized? nothing to do
       if (exp.finalizedAt)
         return {
           finalized: true,
@@ -175,7 +166,6 @@ export class ExpenseParticipantsService {
         };
       }
 
-      // 1) pending -> declined
       await participantRepo
         .createQueryBuilder()
         .update(ExpenseParticipant)
@@ -184,7 +174,6 @@ export class ExpenseParticipantsService {
         .andWhere('status = :pending', { pending: ParticipantStatus.Pending })
         .execute();
 
-      // 2) compute accepted participants (excluding payer if split should not include them)
       const acceptedRows: { memberId: number }[] = await participantRepo
         .createQueryBuilder('p')
         .select('p.member_id', 'memberId')
@@ -196,9 +185,7 @@ export class ExpenseParticipantsService {
       const acceptedIds = acceptedRows.map((r) => r.memberId);
       const acceptedCount = acceptedIds.length;
 
-      // 3) settle balances only if there is at least one accept
       if (String(exp.txnType) === 'expense' && acceptedCount > 0) {
-        // base share for each participant including payer
         const share = Number(
           (Number(exp.amount) / (acceptedCount + 1)).toFixed(2),
         );
@@ -208,11 +195,10 @@ export class ExpenseParticipantsService {
           share,
           exp.paidById,
           exp.groupId,
-          acceptedRows, // make sure expenseBalance expects number[]
+          acceptedRows,
         );
       }
 
-      // 4) finalize
       await expenseRepo.update({ id: exp.id }, { finalizedAt: now });
       this.finalizer?.cancel(expenseId);
       return {
@@ -235,15 +221,103 @@ export class ExpenseParticipantsService {
       .getMany();
   }
 
-  // findMissedExpensesForUser(userId: number) {
-  //   return this.repo
-  //     .createQueryBuilder('p')
-  //     .leftJoinAndSelect('p.expense', 'expense')
-  //     .innerJoin('p.member', 'member')
-  //     .leftJoinAndSelect('member.user', 'user')
-  //     .where('user.id = :userId', { userId })
-  //     .andWhere('p.status = :status', { status: ParticipantStatus.Declined })
-  //     .andWhere('expense.finalized_at IS NOT NULL')
-  //     .getMany();
-  // }
+  async findMissedExpensesForUser(userId: number) {
+    const expenses = await this.repo
+      .createQueryBuilder('p')
+      .leftJoinAndSelect('p.expense', 'expense')
+      .leftJoinAndSelect('expense.group', 'group')
+      .leftJoinAndSelect('expense.paidBy', 'paidBy')
+      .leftJoinAndSelect('paidBy.user', 'paidByUser') // <-- missing join
+      .leftJoinAndSelect('p.member', 'member')
+      .leftJoinAndSelect('member.user', 'user')
+      .where('user.id = :userId', { userId })
+      .andWhere('expense.finalized_at IS NOT NULL')
+      .andWhere('p.has_missed = :hasMissed', { hasMissed: true })
+      .getMany();
+
+    return expenses.map((p) => new BaseExpenseDto(p.expense));
+  }
+
+  async participateInExpense(
+    expenseId: number,
+    memberId: number,
+    status: ParticipantStatus,
+  ) {
+    return this.repo.manager.transaction(async (manager) => {
+      const expenseRepo = manager.getRepository(Expense);
+      const participantRepo = manager.getRepository(ExpenseParticipant);
+
+      const exp = await expenseRepo
+        .createQueryBuilder('e')
+        .setLock('pessimistic_write')
+        .where('e.id = :expenseId', { expenseId })
+        .getOne();
+
+      if (!exp) {
+        throw new BadRequestException('Expense not found');
+      }
+
+      if (!exp.finalizedAt) {
+        throw new BadRequestException('Expense is not finalized yet');
+      }
+
+      if (exp.txnType === TxnType.TRANSFER) {
+        throw new BadRequestException(
+          'Cannot participate in transfer expenses',
+        );
+      }
+
+      await participantRepo
+        .createQueryBuilder('p')
+        .setLock('pessimistic_write')
+        .where('p.expense_id = :expenseId', { expenseId })
+        .getMany();
+
+      const existingParticipant = await participantRepo.findOne({
+        where: { expenseId, memberId },
+      });
+
+      if (!existingParticipant) {
+        throw new BadRequestException('Participant not found for this expense');
+      }
+
+      if (existingParticipant.status === ParticipantStatus.Accepted) {
+        throw new BadRequestException('Participant already added to expense');
+      }
+
+      if (status === ParticipantStatus.Declined) {
+        await participantRepo.update(
+          { expenseId, memberId },
+          {
+            status: ParticipantStatus.Declined,
+            hasMissed: false,
+            respondedAt: () => 'CURRENT_TIMESTAMP',
+          },
+        );
+        return existingParticipant;
+      }
+
+      const oldParticipants = await participantRepo
+        .createQueryBuilder('p')
+        .select('p.member_id', 'member_id')
+        .where('p.expense_id = :expenseId', { expenseId })
+        .andWhere('p.status = :status', { status: ParticipantStatus.Accepted })
+        .getRawMany<{ member_id: string }>()
+        .then((rows) => rows.map((r) => ({ memberId: Number(r.member_id) })));
+
+      await this.groupMembersBalanceService.expenseBalanceForNewParticipant(
+        expenseId,
+        exp.amount,
+        exp.paidById,
+        exp.groupId,
+        memberId,
+        oldParticipants,
+      );
+
+      await participantRepo.update(
+        { expenseId, memberId },
+        { status, hasMissed: false, respondedAt: () => 'CURRENT_TIMESTAMP' },
+      );
+    });
+  }
 }

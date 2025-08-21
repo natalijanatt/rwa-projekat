@@ -1,0 +1,30 @@
+:host {
+  display: block;
+}
+
+/* Responsive CSS Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+/* Empty state */
+.empty-state {
+  border: 1px dashed #374151; /* gray-700-ish */
+  border-radius: 0.75rem;
+  padding: 2rem;
+  background: #111827; /* gray-900-ish */
+  text-align: center;
+  color: #e5e7eb; /* gray-200-ish */
+
+  .title {
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+  .subtitle {
+    opacity: 0.8;
+    font-size: 0.9rem;
+  }
+}

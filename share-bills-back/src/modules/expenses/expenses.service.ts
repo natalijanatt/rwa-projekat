@@ -5,8 +5,8 @@ import { Repository } from 'typeorm';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { GroupMembersBalanceService } from '../group-members-balance/group-members-balance.service';
 import { ExpenseFinalizerService } from './expense.finalizer.service';
-import { PendingExpenseBus } from 'src/realtime/pending-expense.bus';
 import { GroupMembersService } from '../group-members/group-members.service';
+import { BaseExpenseDto } from './dto/base-expense.dto';
 
 @Injectable()
 export class ExpensesService {
@@ -15,12 +15,24 @@ export class ExpensesService {
     private readonly expenseRepo: Repository<Expense>,
     private readonly groupMembersBalanceService: GroupMembersBalanceService,
     private readonly finalizer: ExpenseFinalizerService,
-    private readonly bus: PendingExpenseBus,
     private readonly groupMembersService: GroupMembersService,
   ) {}
 
   async findOne(id: number): Promise<Expense | null> {
     return this.expenseRepo.findOneBy({ id });
+  }
+
+  async getExpensesForGroup(groupId: number, page:number = 1): Promise<BaseExpenseDto[]> {
+    const expenses = await this.expenseRepo.createQueryBuilder('expense')
+      .leftJoinAndSelect('expense.group', 'group')
+      .leftJoinAndSelect('expense.paidBy', 'paidBy')
+      .where('expense.groupId = :groupId', { groupId })
+      .orderBy('expense.createdAt', 'DESC')
+      .skip((page - 1) * 5)
+      .take(5)
+      .getMany();
+
+    return expenses.map(expense => new BaseExpenseDto(expense));
   }
 
   async create(data: CreateExpenseDto, paidById: number): Promise<Expense> {

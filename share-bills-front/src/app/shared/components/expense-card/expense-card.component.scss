@@ -1,0 +1,91 @@
+:host {
+  display: inline-block;
+}
+
+/* Container */
+.expense-card {
+  --accent-from: #000000;
+  --accent-via: #7c2d12;
+  --accent-to: #4f46e5;
+
+  width: 15rem;   /* ~ w-60 */
+  height: 20rem;  /* ~ h-80 */
+  background: #1f2937; /* gray-800 */
+  color: #f9fafb;       /* gray-50 */
+  padding: 0.75rem;     /* p-3 */
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;          /* gap-1 */
+  border-bottom-right-radius: 1.5rem; /* rounded-br-3xl */
+}
+
+/* Top gradient banner with contrast hover effect */
+.banner {
+  height: 12rem; /* ~ h-48 */
+  border-radius: 0.25rem;
+  background: linear-gradient(
+    to bottom left,
+    var(--accent-from),
+    var(--accent-via),
+    var(--accent-to)
+  );
+  filter: contrast(0.5);
+  transition: filter 0.5s ease;
+}
+
+.expense-card:hover .banner {
+  filter: contrast(1);
+}
+
+/* Content area */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* gap-4 */
+  flex: 1;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 1.25rem;  /* text-xl */
+  font-weight: 700;    /* font-bold */
+  color: #f9fafb;      /* gray-50 */
+  line-height: 1.2;
+}
+
+.id {
+  margin: 0.1rem 0 0 0;
+  font-size: 0.75rem;  /* text-xs */
+  color: #9ca3af;      /* gray-400 */
+}
+
+.amount {
+  font-weight: 700;    /* font-bold */
+  color: #dc2626;      /* red-600 */
+  white-space: nowrap;
+}
+
+/* Primary button */
+.primary {
+  background: #0c4a6e;      /* sky-800 */
+  color: #f9fafb;           /* gray-50 */
+  border: 0;
+  padding: 0.5rem 0;        /* py-2 */
+  border-bottom-right-radius: 0.75rem; /* rounded-br-xl */
+  cursor: pointer;
+  transition: background 150ms ease-in-out;
+}
+
+.primary:hover {
+  background: #0369a1;      /* sky-700 */
+}

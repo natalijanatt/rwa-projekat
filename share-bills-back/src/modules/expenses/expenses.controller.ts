@@ -2,7 +2,9 @@ import {
   BadRequestException,
   Body,
   Controller,
+  ForbiddenException,
   Get,
+  HttpException,
   Param,
   ParseIntPipe,
   Patch,
@@ -25,7 +27,7 @@ import {
 import { PendingExpenseBus } from 'src/realtime/pending-expense.bus';
 import { concatMap, from, map, merge, Observable, tap } from 'rxjs';
 import { PendingExpenseEvent } from './dto/pending-expense-event';
-import type { Response } from 'express';
+import { BaseExpenseDto } from './dto/base-expense.dto';
 
 type RespondDto = { status: ParticipantStatus };
 
@@ -63,6 +65,67 @@ export class ExpensesController {
     return this.expensesService.create(dto, member.id);
   }
 
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/missed')
+  async getMissedExpenses(
+    @Req() req: Request & { user: { userId: number } },
+  ): Promise<BaseExpenseDto[]> {
+    const userId = req.user?.userId;
+    if (!userId || isNaN(Number(userId))) {
+      throw new ForbiddenException(
+        'You have to be logged in to get missed expenses',
+      );
+    }
+    return await this.expenseParticipantsService.findMissedExpensesForUser(
+      userId,
+    );
+  }
+
+  @Sse('expense-stream')
+  expenseStream(
+    @Query('userId') userId: number,
+  ): Observable<{ data: PendingExpenseEvent }> {
+    const backlog$ = from(
+      this.expenseParticipantsService.findPendingEventsForUser(userId),
+    ).pipe(
+      concatMap((rows) => from(rows)),
+      tap((row) => console.log('[SSE row]', row)),
+      map((row) => this.toPendingEvent(row)),
+    );
+
+    //   const heartbeat$ = interval(15000).pipe(
+    //   map(() => ({ type: 'heartbeat', data: null } as MessageEvent))
+    // );
+
+    // 2) live stream
+    const live$ = this.bus.forUser$(userId);
+
+    // 3) merge + shape as SSE
+    return merge(backlog$, live$).pipe(
+      map((data) => ({ data }) as MessageEvent),
+    );
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/:groupId')
+  async getExpenses(
+    @Param('groupId', ParseIntPipe) groupId: number,
+    @Query('page') page: number = 1,
+    @Req() req: Request & { user: { userId: number } },
+  ): Promise<BaseExpenseDto[]> {
+    const userId = req.user?.userId;
+    if (!userId || isNaN(Number(userId))) {
+      throw new ForbiddenException('You have to be logged in to get expenses');
+    }
+    const validated = await this.groupsService.checkMembership(userId, groupId);
+
+    if (!validated) {
+      throw new ForbiddenException('You are not a member of this group');
+    }
+
+    return this.expensesService.getExpensesForGroup(+groupId, +page);
+  }
+
   @Get('countdown/:expenseId')
   @Sse()
   countdown(@Param('expenseId', ParseIntPipe) expenseId: number) {
@@ -79,7 +142,7 @@ export class ExpensesController {
   ) {
     const userId = req.user?.userId;
     if (!userId || isNaN(Number(userId))) {
-      throw new BadRequestException(
+      throw new ForbiddenException(
         'You have to be logged in to respond to an expense',
       );
     }
@@ -90,9 +153,7 @@ export class ExpensesController {
         memberId,
       );
     if (!validateParticipant) {
-      throw new BadRequestException(
-        'You are not a participant of this expense',
-      );
+      throw new ForbiddenException('You are not a participant of this expense');
     }
     if (
       dto.status.toString() !== 'accepted' &&
@@ -107,30 +168,48 @@ export class ExpensesController {
     );
   }
 
-  // @UseGuards(AuthGuard('jwt'))
-  @Sse('expense-stream')
-  expenseStream(
-    @Query('userId') userId: number,
-  ): Observable<{ data: PendingExpenseEvent }> {
-    const backlog$ = from(
-      this.expenseParticipantsService.findPendingEventsForUser(userId),
-    ).pipe(
-      concatMap((rows) => from(rows)),
-      tap(row => console.log('[SSE row]', row)),
-      map((row) => this.toPendingEvent(row)),
-    );
-
-  //   const heartbeat$ = interval(15000).pipe(
-  //   map(() => ({ type: 'heartbeat', data: null } as MessageEvent))
-  // );
-
-    // 2) live stream
-    const live$ = this.bus.forUser$(userId);
-
-    // 3) merge + shape as SSE
-    return merge(backlog$, live$).pipe(
-      map((data) => ({ data }) as MessageEvent),
-    );
+  @UseGuards(AuthGuard('jwt'))
+  @Patch(':expenseId/respond-late/:memberId')
+  async respondLate(
+    @Req() req: Request & { user: { userId: number } },
+    @Param('expenseId', ParseIntPipe) expenseId: number,
+    @Param('memberId', ParseIntPipe) memberId: number,
+    @Body() dto: RespondDto,
+  ) {
+    const userId = req.user?.userId;
+    if (!userId || isNaN(Number(userId))) {
+      throw new ForbiddenException(
+        'You have to be logged in to respond to an expense',
+      );
+    }
+    const validateParticipant =
+      await this.expenseParticipantsService.checkParticipant(
+        expenseId,
+        userId,
+        memberId,
+      );
+    if (!validateParticipant) {
+      throw new ForbiddenException('You are not a participant of this expense');
+    }
+    if (
+      dto.status.toString() !== 'accepted' &&
+      dto.status.toString() !== 'declined'
+    ) {
+      throw new BadRequestException('status must be accepted|declined');
+    }
+    try {
+      const participant =
+        await this.expenseParticipantsService.participateInExpense(
+          expenseId,
+          memberId,
+          dto.status,
+        );
+      return participant;
+    } catch (e) {
+      if (e instanceof HttpException) {
+        throw e;
+      }
+    }
   }
 
   private toPendingEvent(p: ExpenseParticipant): PendingExpenseEvent {

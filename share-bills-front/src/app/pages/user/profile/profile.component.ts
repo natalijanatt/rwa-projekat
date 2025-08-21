@@ -4,10 +4,11 @@ import { Subscription} from 'rxjs';
 import { selectUser } from '../../../core/auth/state/auth.selectors';
 import { UserDto } from '../../../feature/users/data/user.dto';
 import { DatePipe, NgIf, UpperCasePipe } from '@angular/common';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-profile',
-  imports: [NgIf, UpperCasePipe, DatePipe],
+  imports: [NgIf, UpperCasePipe, DatePipe, ButtonComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss'
 })
