@@ -73,8 +73,18 @@ export const routes: Routes = [
   },
 
   {
+    path: 'expenses/:expenseId/group/:groupId',
+    canActivate: [authGuard],
+    pathMatch: 'full',
+    loadComponent: () =>
+      import('./pages/expenses/expense-details/expense-details.component').then(
+        (m) => m.ExpenseDetailsComponent
+      ),
+  },
+  {
     path: 'groups/:id',
     canActivate: [authGuard],
+    pathMatch: 'full',
     loadComponent: () =>
       import('./pages/groups/groups-all/groups-all.component').then(
         (m) => m.GroupsAllComponent
@@ -102,9 +112,10 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () =>
       import('./pages/expenses/my-expenses/my-expenses.component').then(
-        (m) => m.MyExpensesComponent
+        (m) => m.MyExpensesPage
       ),
   },
+  
   { path: 'offline', component: OfflineComponent },
   { path: '500', component: Error500Component },
   { path: '**', component: Error404Component },

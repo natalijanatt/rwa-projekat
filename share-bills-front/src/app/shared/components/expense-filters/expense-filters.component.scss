@@ -1,0 +1,29 @@
+.filters {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-self: center;
+
+  .label {
+    font-size: 0.85rem;
+    color: #666;
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-end;
+}

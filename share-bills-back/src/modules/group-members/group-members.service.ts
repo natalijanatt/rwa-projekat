@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GroupMember } from './group-members.entity';
 import { Repository } from 'typeorm';
-import { BaseGroupMemberDto } from './dto/BaseGroupMember.dto';
 import { PendingExpenseBus } from 'src/realtime/pending-expense.bus';
 import { PendingExpenseEvent } from '../expenses/dto/pending-expense-event';
 import { Expense } from '../expenses/expense.entity';
@@ -29,12 +28,12 @@ export class GroupMembersService {
         return this.repo.save(newMember);
     }
 
-    async getMembers(groupId: number): Promise<BaseGroupMemberDto[]> {
+    async getMembers(groupId: number): Promise<GroupMember[]> {
         const groupMembers = await this.repo.createQueryBuilder('group_member')
             .leftJoinAndSelect('group_member.user', 'user')
             .where('group_member.groupId = :groupId', { groupId })
             .getMany();
-        return groupMembers.map(member => new BaseGroupMemberDto(member));
+        return groupMembers;
     }
 
     async getMemberByUserId(groupId: number, userId: number): Promise<GroupMember | null> {
@@ -51,10 +50,12 @@ export class GroupMembersService {
 
         const members = await this.getMembers(groupId);
         members.forEach(member => {
+            if(member.id === expense.paidById) {
+                return;}
             const ev: PendingExpenseEvent = {
                 type: 'pending-expense',
                 expense,
-                me: { status: ParticipantStatus.Pending, memberId: member.userId },
+                me: { status: ParticipantStatus.Pending, memberId: member.id },
             };
             this.bus.emitToUser(member.userId, ev);
             console.log('[BUS] emit to', member.userId, ev.expense.id);

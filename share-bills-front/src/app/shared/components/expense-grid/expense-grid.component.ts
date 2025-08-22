@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { ExpenseCardComponent } from '../expense-card/expense-card.component';
-import { BaseExpenseDto } from '../../../feature/expenses/data/expense-base.dto';
+import { ExpenseBaseDto } from '../../../feature/expenses/data/expense-base.dto';
 
 @Component({
   selector: 'app-expense-grid',
@@ -12,16 +12,16 @@ import { BaseExpenseDto } from '../../../feature/expenses/data/expense-base.dto'
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ExpenseGridComponent {
-  @Input() expenses: BaseExpenseDto[] = [];
+  @Input() expenses: ExpenseBaseDto[] = [];
   @Input() currencyCode: string = 'EUR';
   @Input() buttonLabel = 'Review';
 
-  @Output() openExpense = new EventEmitter<BaseExpenseDto>();
+  @Output() openExpense = new EventEmitter<ExpenseBaseDto>();
 
-  trackById = (_: number, e: BaseExpenseDto) => e.id;
+  trackById = (_: number, e: ExpenseBaseDto) => e.id;
 
   /** Simple palette variation by type / status */
-  palette(e: BaseExpenseDto) {
+  palette(e: ExpenseBaseDto) {
     const isTransfer = (e.txnType || '').toLowerCase() === 'transfer';
     const isFinal = !!e.finalizedAt;
 
@@ -37,7 +37,7 @@ export class ExpenseGridComponent {
     return { from: '#000000', via: '#7c2d12', to: '#4f46e5' };   // black → orange-900 → indigo
   }
 
-  onOpen(expense: BaseExpenseDto) {
+  onOpen(expense: ExpenseBaseDto) {
     this.openExpense.emit(expense);
   }
 }

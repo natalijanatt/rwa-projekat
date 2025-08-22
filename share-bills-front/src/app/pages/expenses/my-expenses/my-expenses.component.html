@@ -1,1 +1,24 @@
-<p>my-expenses works!</p>
+<app-expense-filters (filtersChange)="onFiltersChange($event)"></app-expense-filters>
+
+<ng-container *ngIf="page$ | async as page; else loading">
+    <div *ngIf="page.items?.length; else empty" class="content">
+        <app-expense-grid [expenses]="page.items" [currencyCode]="'RSD'" [buttonLabel]="'Open'"
+            (openExpense)="onOpenExpense($event)">
+        </app-expense-grid>
+
+        <mat-paginator [length]="page.totalItems" [pageSize]="page.pageSize ? page.pageSize : 20"
+            [pageIndex]="Math.max((page.page) - 1, 0)"
+            (page)="onPageChange($event)">
+        </mat-paginator>
+    </div>
+
+    <ng-template #empty>
+        <div class="empty">No expenses found with the current filters.</div>
+    </ng-template>
+</ng-container>
+
+<ng-template #loading>
+    <div class="loading">
+        <mat-progress-spinner mode="indeterminate" diameter="36"></mat-progress-spinner>
+    </div>
+</ng-template>

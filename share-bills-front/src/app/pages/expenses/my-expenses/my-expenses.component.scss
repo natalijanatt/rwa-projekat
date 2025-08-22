@@ -1,0 +1,11 @@
+.content {
+  display: grid;
+  gap: 1rem;
+}
+
+.loading, .empty {
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  color: #666;
+}

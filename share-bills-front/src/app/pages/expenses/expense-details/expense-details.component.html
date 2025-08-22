@@ -1,0 +1,93 @@
+<ng-container *ngIf="expense$ | async as exp; else loading">
+  <div class="page" *ngIf="exp; else notFound">
+    <div class="toolbar">
+      <a [routerLink]="['/groups', exp.groupId]" class="back-link">← Back to group</a>
+      <span class="status" [ngClass]="{ finalized: exp.finalizedAt, pending: !exp.finalizedAt }">
+        {{ exp.finalizedAt ? 'Finalized' : 'Pending' }}
+      </span>
+    </div>
+
+    <header class="header">
+      <h1 class="title">{{ exp.title }}</h1>
+      <div class="amount">{{ exp.amount | currency }}</div>
+    </header>
+
+    <section class="meta grid">
+      <div class="item">
+        <div class="label">Transaction type</div>
+        <div class="value">{{ exp.txnType | titlecase }}</div>
+      </div>
+
+      <div class="item">
+        <div class="label">Date incurred</div>
+        <div class="value">{{ exp.dateIncurred | date:'mediumDate' }}</div>
+      </div>
+
+      <div class="item">
+        <div class="label">Group</div>
+        <div class="value">
+          <a [routerLink]="['/groups', exp.groupId]" class="link">{{ exp.group.name || ('#' + exp.groupId) }}</a>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="label">Paid by</div>
+        <div class="value person">
+          <img class="avatar" [src]="exp.paidBy.user.imagePath || 'assets/avatar-placeholder.webp'" alt="" />
+          <span>{{ exp.paidBy.user.name || ('Member #' + exp.paidById) }}</span>
+        </div>
+      </div>
+
+      <div class="item" *ngIf="exp.paidToId">
+        <div class="label">Paid to</div>
+        <div class="value person">
+          <!-- If you have paidTo in the DTO later, reflect it here -->
+          <span>Member #{{ exp.paidToId }}</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="participants">
+      <div class="section-header">
+        <h2>Participants ({{ exp.participantsCount }})</h2>
+      </div>
+
+      <div class="list" *ngIf="exp.participants?.length; else noParticipants">
+        <div class="participant" *ngFor="let m of exp.participants; trackBy: trackByMember">
+          <img class="avatar" [src]="m?.user?.imagePath || 'assets/avatar-placeholder.webp'" alt="" />
+          <div class="info">
+            <div class="name">{{ m?.user?.name || ('Member #' + m?.id) }}</div>
+            <div class="sub">{{ m?.user?.email }}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <ng-template #noParticipants>
+      <p class="muted">No accepted participants yet.</p>
+    </ng-template>
+    <div class="actions" *ngIf="!participated()">
+      <p>If you decide to participate, it will cost you {{exp.amount/(exp.participantsCount+1) | currency}}</p>
+      <app-button [label]="'Accept'" (clicked)="handleExpense('accepted')" class="btn btn-secondary"/>
+      <app-button [label]="'Reject'" (clicked)="handleExpense('declined')" variant="danger" class="btn btn-primary"/>
+    </div>
+  </div>
+</ng-container>
+
+<ng-template #loading>
+  <div class="skeleton">
+    <div class="line xl"></div>
+    <div class="line"></div>
+    <div class="grid">
+      <div class="box"></div>
+      <div class="box"></div>
+      <div class="box"></div>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #notFound>
+  <div class="empty">
+    <p>Expense not found.</p>
+    <a routerLink="/groups" class="link">Go to groups</a>
+  </div>
+</ng-template>

@@ -1,0 +1,71 @@
+<div class="filters">
+  <div class="row">
+    <!-- Group (optional) -->
+    <mat-form-field appearance="outline">
+      <mat-label>Group</mat-label>
+      <mat-select
+        [value]="form.value.groupId"
+        (selectionChange)="onGroupChange($event.value)">
+        <mat-option [value]="null">All groups</mat-option>
+        <mat-option *ngFor="let g of groups; trackBy: groupsTrackBy" [value]="g.id">
+          {{ g.name || ('Group #' + g.id) }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Status (selectable) -->
+    <mat-form-field appearance="outline">
+      <mat-label>Status</mat-label>
+      <mat-select [formControl]="form.controls.status">
+        <mat-option value="">Any</mat-option>
+        <mat-option value="accepted">Accepted</mat-option>
+        <mat-option value="declined">Rejected</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Paid by (member; enabled only when a group is selected) -->
+    <mat-form-field appearance="outline">
+      <mat-label>Paid by</mat-label>
+      <mat-select
+        [disabled]="!form.value.groupId || !members.length"
+        [formControl]="form.controls.paidBy">
+        <mat-option [value]="null">Anyone</mat-option>
+        <mat-option *ngFor="let m of members; trackBy: membersTrackBy" [value]="m.id">
+          {{ m.user.name || ('Member #' + m.id) }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div class="row">
+    <!-- Order by -->
+    <mat-form-field appearance="outline">
+      <mat-label>Order by</mat-label>
+      <mat-select [formControl]="form.controls.ordredBy">
+        <mat-option value="createdAt">Created</mat-option>
+        <mat-option value="amount">Amount</mat-option>
+        <mat-option value="title">Title</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Direction -->
+    <div class="toggle">
+      <div class="label">Direction</div>
+      <mat-button-toggle-group [formControl]="form.controls.orderDirection" name="direction">
+        <mat-button-toggle value="ASC">ASC</mat-button-toggle>
+        <mat-button-toggle value="DESC">DESC</mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+
+    <div class="actions">
+      <button mat-stroked-button color="primary" (click)="applyFilters()">
+        <mat-icon>filter_alt</mat-icon>
+        Apply
+      </button>
+      <button mat-button (click)="resetFilters()">
+        <mat-icon>restart_alt</mat-icon>
+        Reset
+      </button>
+    </div>
+  </div>
+</div>

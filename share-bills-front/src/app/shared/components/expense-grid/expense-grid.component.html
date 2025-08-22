@@ -1,4 +1,4 @@
-<div class="grid" *ngIf="expenses?.length; else empty">
+<div class="grid" *ngIf="expenses?.length;">
   <app-expense-card
     *ngFor="let e of expenses; trackBy: trackById"
     [title]="e.title"
@@ -13,9 +13,3 @@
   />
 </div>
 
-<ng-template #empty>
-  <div class="empty-state">
-    <div class="title">No expenses yet</div>
-    <div class="subtitle">When you add expenses, they’ll show up here.</div>
-  </div>
-</ng-template>

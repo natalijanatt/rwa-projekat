@@ -1,15 +1,19 @@
 import { GroupBaseDto } from "../../groups/data/group-base.dto";
 import { GroupMemberBaseDto } from "../../groups/data/group-member-base.dto";
 
-export interface ExpenseBaseDto {
+export interface FullExpenseDto {
     id: number;
+    groupId: number;
+    paidById: number;
+    paidToId: number | null;
     title: string;
     amount: number;
-    group: GroupBaseDto;
-    groupId: number;
-    paidBy: GroupMemberBaseDto;
-    paidById: number;
     txnType: string;
+    dateIncurred: string;
     createdAt: Date;
     finalizedAt: Date | null;
+    paidBy: GroupMemberBaseDto;
+    group: GroupBaseDto;
+    participantsCount: number;
+    participants: GroupMemberBaseDto[];
 }

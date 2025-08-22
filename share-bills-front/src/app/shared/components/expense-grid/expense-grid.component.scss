@@ -4,10 +4,10 @@
 
 /* Responsive CSS Grid */
 .grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1rem;
-  align-items: start;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: flex-start;
 }
 
 /* Empty state */

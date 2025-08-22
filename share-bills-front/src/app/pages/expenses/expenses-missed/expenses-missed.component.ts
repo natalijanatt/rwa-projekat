@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { BaseExpenseDto } from '../../../feature/expenses/data/expense-base.dto';
+import { ExpenseBaseDto } from '../../../feature/expenses/data/expense-base.dto';
 import { ExpenseService } from '../../../feature/expenses/expense.service';
 import { Router } from '@angular/router';
 import { ExpenseGridComponent } from '../../../shared/components/expense-grid/expense-grid.component';
@@ -15,7 +15,7 @@ export class ExpensesMissedComponent {
   private expenseService = inject(ExpenseService);
   private router = inject(Router);
 
-  expenses: BaseExpenseDto[] = [];
+  expenses: ExpenseBaseDto[] = [];
   loading = false;
   error: string | null = null;
 
@@ -28,7 +28,7 @@ export class ExpensesMissedComponent {
     this.error = null;
 
     this.expenseService.getMissedExpenses().subscribe({
-      next: (expenses: BaseExpenseDto[]) => {
+      next: (expenses: ExpenseBaseDto[]) => {
         // Optional: sort newest first
         this.expenses = [...expenses].sort((a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -43,9 +43,9 @@ export class ExpensesMissedComponent {
     });
   }
 
-  onOpenExpense(expense: BaseExpenseDto) {
+  onOpenExpense(expense: ExpenseBaseDto) {
     // Navigate to your expense details/review route — adjust as needed
-    this.router.navigate(['/expenses', expense.id]);
+    this.router.navigate([`/expenses/${expense.id}/group/${expense.groupId}`]);
   }
 
   reload() {
