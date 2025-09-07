@@ -8,7 +8,7 @@ import {
   switchMap,
   filter,
 } from 'rxjs/operators';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog'; // 👈 add
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { GroupService } from '../../../feature/groups/group.service';
 import { GroupFullDto } from '../../../feature/groups/data/group-full.dto';
 import { GroupMemberBaseDto } from '../../../feature/groups/data/group-member-base.dto';
@@ -19,7 +19,7 @@ import { ExpenseCreateComponent } from '../expense-create/expense-create.compone
 @Component({
   selector: 'app-group-view',
   standalone: true,
-  imports: [NgIf, NgFor, NgClass, NgOptimizedImage, MatDialogModule],
+  imports: [NgIf, NgFor, NgOptimizedImage, MatDialogModule],
   templateUrl: './group-view.component.html',
   styleUrl: './group-view.component.scss',
 })

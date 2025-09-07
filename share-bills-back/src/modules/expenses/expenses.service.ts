@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Expense, TxnType } from './expense.entity';
 import { Repository } from 'typeorm';
@@ -19,8 +19,9 @@ export class ExpensesService {
     @InjectRepository(Expense)
     private readonly expenseRepo: Repository<Expense>,
     private readonly groupMembersBalanceService: GroupMembersBalanceService,
-    private readonly finalizer: ExpenseFinalizerService,
     private readonly groupMembersService: GroupMembersService,
+    @Inject(forwardRef(() => ExpenseFinalizerService))
+    private readonly finalizer: ExpenseFinalizerService,
   ) {}
 
   async findOne(id: number): Promise<Expense | null> {
@@ -76,8 +77,9 @@ export class ExpensesService {
       qb.andWhere('participants.status = :status', { status: filter.status });
     }
 
-    if (typeof filter.paidBy === 'number') {
-      qb.andWhere('paidBy.id = :paidById', { paidById: filter.paidBy });
+    if (filter.paidBy) {
+      console.log('filter.paidBy', filter.paidBy);
+      qb.andWhere('expense.paidBy = :paidBy', { paidBy: filter.paidBy });
     }
 
     if (filter.ordredBy) {
@@ -174,5 +176,15 @@ export class ExpensesService {
     await this.groupMembersService.emitToGroup(expense.groupId, expense);
 
     return expense;
+  }
+
+  async getExpenseCountForUser(userId: number): Promise<number> {
+    const count = await this.expenseRepo
+      .createQueryBuilder('expense')
+      .leftJoin('expense.participants', 'participants')
+      .leftJoin('participants.member', 'member')
+      .where('member.userId = :userId', { userId })
+      .getCount();
+    return count;
   }
 }

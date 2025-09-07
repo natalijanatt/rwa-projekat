@@ -15,7 +15,7 @@ import { GroupMembersBalanceModule } from './modules/group-members-balance/group
 import { ExpensesModule } from './modules/expenses/expenses.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { StorageService } from './modules/storage/storage.service';
-import { RealtimeModule } from './realtime/realtime/realtime.module';
+import { RealtimeModule } from './realtime/realtime.module';
 
 @Module({
   imports: [

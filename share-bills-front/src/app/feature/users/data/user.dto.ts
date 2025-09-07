@@ -7,4 +7,5 @@ export interface UserDto {
   createdAt: Date;
   groupsOwned: number[];
   memberships: number[];
+  expensesCount?: number;
 }

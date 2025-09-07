@@ -1,12 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { TokenState } from './core/auth/token.state';
-import { AuthService } from './core/auth/auth.service';
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { NavBarComponent } from './layout/nav-bar/nav-bar.component';
 import { ExpenseReviewListener } from './feature/expenses/expense-new.listener';
 import { Store } from '@ngrx/store';
 import { selectAuth } from './core/auth/state/auth.selectors';
 import { distinctUntilChanged, filter, map, take } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -16,16 +15,38 @@ import { distinctUntilChanged, filter, map, take } from 'rxjs';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
-export class AppComponent {
+export class AppComponent implements OnInit, OnDestroy {
   private reviewListener = inject(ExpenseReviewListener);
   private store = inject(Store);
+  private router = inject(Router);
+  private routerSubscription: Subscription | undefined;
 
   ngOnInit() {
-  this.store.select(selectAuth).pipe(
-    map(a => a?.status === 'authenticated'),
-    distinctUntilChanged(),
-    filter(Boolean),
-    take(1)                // <<— call init exactly once
-  ).subscribe(() => this.reviewListener.init());
-}
+    this.store.select(selectAuth).pipe(
+      map(a => a?.status === 'authenticated'),
+      distinctUntilChanged(),
+      filter(Boolean),
+      take(1)
+    ).subscribe(() => this.reviewListener.init());
+
+    this.routerSubscription = this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        this.scrollToTop();
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
+  }
+
+  private scrollToTop(): void {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'smooth'
+    });
+  }
 }

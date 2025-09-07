@@ -26,7 +26,6 @@ export class ExpenseFinalizerService implements OnModuleInit, OnModuleDestroy {
 
   private async getParticipants() {
     if (!this.participants) {
-      // lazy resolve to avoid circular DI timing issues
       this.participants = await this.moduleRef.resolve(
         ExpenseParticipantsService,
         undefined,
@@ -51,10 +50,8 @@ export class ExpenseFinalizerService implements OnModuleInit, OnModuleDestroy {
       (e) => new Date(e.acceptanceDeadline).getTime() <= now,
     );
 
-    // schedule only future deadlines
     for (const e of future) this.schedule(e.id, new Date(e.acceptanceDeadline));
 
-    // process expired in small batches to avoid DB pool stampede
     await this.drainExpiredQueue(expired.map((e) => e.id));
   }
 

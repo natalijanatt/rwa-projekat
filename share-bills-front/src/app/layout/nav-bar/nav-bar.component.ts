@@ -1,6 +1,6 @@
 import { NgFor, NgIf } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive} from '@angular/router';
+import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { TokenState } from '../../core/auth/token.state';
 
 @Component({
@@ -11,6 +11,7 @@ import { TokenState } from '../../core/auth/token.state';
 })
 export class NavBarComponent {
   private authState = inject(TokenState);
+  private router = inject(Router);
 
   menuOpen = signal(false);
   isAuth = signal<boolean>(this.authState.isAuthenticated);
@@ -27,4 +28,30 @@ export class NavBarComponent {
   close()  { this.menuOpen.set(false); }
 
   logout() { this.authState.forceLogout(); }
+
+  /**
+   * Handles navigation clicks - scrolls to top if clicking current route
+   */
+  onNavClick(path: string, event: Event): void {
+    const currentUrl = this.router.url;
+    
+    // If clicking on the current route, scroll to top instead of navigating
+    if (currentUrl === path || (path === '/' && currentUrl === '/')) {
+      event.preventDefault();
+      this.scrollToTop();
+    }
+    
+    this.close(); // Close mobile menu
+  }
+
+  /**
+   * Scrolls the page to the top with smooth animation
+   */
+  private scrollToTop(): void {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'smooth'
+    });
+  }
 }

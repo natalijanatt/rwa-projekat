@@ -44,16 +44,6 @@ export const routes: Routes = [
         (m) => m.ProfileComponent
       ),
   },
-
-  {
-    path: 'update-me',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./pages/user/update/update.component').then(
-        (m) => m.UpdateComponent
-      ),
-  },
-
   {
     path: 'groups/create',
     canActivate: [authGuard],
@@ -112,7 +102,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () =>
       import('./pages/expenses/my-expenses/my-expenses.component').then(
-        (m) => m.MyExpensesPage
+        (m) => m.MyExpensesComponent
       ),
   },
   

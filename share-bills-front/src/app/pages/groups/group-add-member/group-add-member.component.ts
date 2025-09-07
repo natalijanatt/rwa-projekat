@@ -24,7 +24,6 @@ type DialogData = { group: GroupBaseDto };
   selector: 'app-group-add-member',
   standalone: true,
   imports: [
-    ButtonComponent,
     // Angular
     CommonModule, NgIf, NgFor, AsyncPipe, ReactiveFormsModule,
     // Material

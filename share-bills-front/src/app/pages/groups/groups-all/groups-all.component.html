@@ -1,32 +1,62 @@
-<div class="header">
-  <h1>Groups</h1>
-  <app-button class="btn btn-primary" (click)="onCreateGroup()" [disabled]="creatingGroup()" [label]="'Create a group'"/>
-  </div>
-<div class="layout">
-  <div class="left">
-    <app-group-list
-      [groups]="groups()"
-      (selection)="onSelect($event)">
-    </app-group-list>
-  </div>
-
-  <div class="right">
-  <ng-container *ngIf="selectedGroupId() && !creatingGroup(); else createOrEmpty">
-    <app-group-view/>
-  </ng-container>
-
-  <ng-template #createOrEmpty>
-    <ng-container *ngIf="creatingGroup(); else placeholder">
-      <app-group-create (cancel)="onCreateGroup()"></app-group-create>
-    </ng-container>
-  </ng-template>
-
-  <ng-template #placeholder>
-    <div class="empty">
-      <h3>Select a group</h3>
-      <p>Pick a group from the list to see details and actions.</p>
+<div class="groups-page">
+  <!-- Header Section -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1 class="page-title">Groups</h1>
+        <p class="page-subtitle">Manage your expense groups and collaborate with friends</p>
+      </div>
+      <button class="create-button primary" (click)="onCreateGroup()" [disabled]="creatingGroup()">
+        <span class="button-icon">➕</span>
+        {{ creatingGroup() ? 'Creating...' : 'Create Group' }}
+      </button>
     </div>
-  </ng-template>
-</div>
+  </div>
 
+  <!-- Main Content -->
+  <div class="content-layout">
+    <!-- Left Sidebar - Groups List -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h3 class="sidebar-title">Your Groups</h3>
+        <span class="groups-count">{{ groups().length || 0 }} groups</span>
+      </div>
+      
+      <div class="groups-container">
+        <app-group-list
+          [groups]="groups()"
+          (selection)="onSelect($event)">
+        </app-group-list>
+      </div>
+    </div>
+
+    <!-- Right Content Area -->
+    <div class="main-content">
+      <ng-container *ngIf="selectedGroupId() && !creatingGroup(); else createOrEmpty">
+        <app-group-view/>
+      </ng-container>
+
+      <ng-template #createOrEmpty>
+        <ng-container *ngIf="creatingGroup(); else placeholder">
+          <div class="create-section">
+            <app-group-create (cancel)="onCreateGroup()"></app-group-create>
+          </div>
+        </ng-container>
+      </ng-template>
+
+      <ng-template #placeholder>
+        <div class="empty-state">
+          <div class="empty-icon">👥</div>
+          <h3 class="empty-title">Select a Group</h3>
+          <p class="empty-description">Choose a group from the sidebar to view details, manage members, and add expenses.</p>
+          <div class="empty-actions">
+            <button class="empty-action-button" (click)="onCreateGroup()">
+              <span class="button-icon">➕</span>
+              Create Your First Group
+            </button>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+  </div>
 </div>

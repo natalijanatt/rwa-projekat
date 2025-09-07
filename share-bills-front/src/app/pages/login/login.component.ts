@@ -13,7 +13,7 @@ import { Actions, ofType } from '@ngrx/effects';
 
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, FormComponent, InputFieldComponent],
+  imports: [CommonModule, FormComponent, InputFieldComponent, RouterLink],
   standalone: true,
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',

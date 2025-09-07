@@ -22,5 +22,6 @@ import { StorageService } from '../storage/storage.service';
     GroupMembersService,
     StorageService
   ],
+  exports: [GroupsService],
 })
 export class GroupsModule {}

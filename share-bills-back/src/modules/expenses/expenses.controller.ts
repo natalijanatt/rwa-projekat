@@ -82,8 +82,6 @@ export class ExpensesController {
     return this.expenseParticipantsService.findMissedExpensesForUser(userId);
   }
 
-  // ---------- SSE ROUTES (AUTH VIA COOKIE withCredentials OR ?token=) ----------
-
   @Sse('expense-stream')
   @Header('Content-Type', 'text/event-stream')
   @Header('Cache-Control', 'no-cache')
@@ -92,11 +90,9 @@ export class ExpensesController {
   expenseStream(
     @Query('userId', ParseIntPipe) userIdFromQuery: number,
   ): Observable<MessageEvent> {
-    // Allow either cookie-based auth (req.user) OR JWT in query (?token=)
     const userId = +userIdFromQuery;
 
     if (!userId || Number.isNaN(+userId)) {
-      // If you want to *require* auth for SSE, make this a ForbiddenException
       throw new ForbiddenException('Unauthorized SSE');
     }
 
@@ -256,19 +252,6 @@ export class ExpensesController {
     }
   }
 
-  // ---------- helpers ----------
-
-  // private tryVerifyToken(token?: string): { userId: number } | null {
-  //   if (!token) return null;
-  //   try {
-  //     const payload = this.jwt.verify(token); // same secret as your Bearer strategy
-  //     // adjust if your JWT stores different claim names
-  //     return { userId: payload.sub ?? payload.userId ?? payload.id };
-  //   } catch {
-  //     return null;
-  //   }
-  // }
-
   private toPendingEvent(p: ExpenseParticipant) {
     return {
       type: 'pending-expense',
@@ -279,6 +262,8 @@ export class ExpensesController {
         groupId: p.groupId ?? p.expense?.groupId,
         paidById: p.expense?.paidById ?? 0,
       },
+      paidByName: p.expense.paidBy?.user.name || 'Loading...',
+      groupName: p.expense?.group?.name || 'Loading...',
       me: {
         memberId: p.memberId,
         status: p.status ?? ParticipantStatus.Pending,

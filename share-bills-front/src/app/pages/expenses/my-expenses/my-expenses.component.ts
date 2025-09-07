@@ -7,13 +7,11 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Store } from '@ngrx/store';
 import { map, switchMap, combineLatestWith, shareReplay, filter as rxFilter } from 'rxjs';
 
-
 import { ExpenseService } from '../../../feature/expenses/expense.service';
 import { ExpenseBaseDto } from '../../../feature/expenses/data/expense-base.dto';
 import { ExpenseFilterDto } from '../../../feature/expenses/data/expense-filter.dto';
 import { selectUser } from '../../../core/auth/state/auth.selectors';
 import { ExpenseFiltersComponent } from '../../../shared/components/expense-filters/expense-filters.component';
-import { ExpenseGridComponent } from '../../../shared/components/expense-grid/expense-grid.component';
 import { ExpensePaginatedDto } from '../../../feature/expenses/data/expense-paginated.dto';
 
 @Component({
@@ -26,16 +24,18 @@ import { ExpensePaginatedDto } from '../../../feature/expenses/data/expense-pagi
     MatPaginatorModule,
     MatProgressSpinnerModule,
     ExpenseFiltersComponent,
-    ExpenseGridComponent,
   ],
   templateUrl: './my-expenses.component.html',
   styleUrls: ['./my-expenses.component.scss'],
 })
-export class MyExpensesPage {
+export class MyExpensesComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private store = inject(Store);
   private expenseService = inject(ExpenseService);
+
+  // Make Math available in template
+  Math = Math;
 
   /** Build effective filters from URL + current user */
   filters$ = this.route.queryParamMap.pipe(
@@ -93,22 +93,43 @@ export class MyExpensesPage {
 
   onPageChange(e: PageEvent) {
     console.log('Page changed:', e);
-    this.updateQueryParams({ page: e.pageIndex + 1 });
+    this.updateQueryParams({
+      page: e.pageIndex + 1,
+    });
   }
 
   onOpenExpense(expense: ExpenseBaseDto) {
     this.router.navigate([`/expenses/${expense.id}/group/${expense.groupId}`]);
   }
 
-  private updateQueryParams(updates: Record<string, any>) {
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: updates,
-      queryParamsHandling: 'merge',
-    });
+  onCreateNewExpense() {
+    this.router.navigate(['/expenses/create']);
   }
 
-  get Math() {
-  return Math;
+  trackByExpenseId(index: number, expense: ExpenseBaseDto): number {
+    return expense.id;
+  }
+
+  getStatusClass(expense: ExpenseBaseDto): string {
+    // This is a simplified status - in a real app you'd get this from the expense data
+    if (expense.finalizedAt) {
+      return 'status-finalized';
+    }
+    return 'status-pending';
+  }
+
+  getStatusText(expense: ExpenseBaseDto): string {
+    if (expense.finalizedAt) {
+      return 'Finalized';
+    }
+    return 'Pending';
+  }
+
+  private updateQueryParams(params: Record<string, any>) {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: params,
+      queryParamsHandling: 'merge',
+    });
   }
 }

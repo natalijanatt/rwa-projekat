@@ -31,6 +31,8 @@ export interface PendingExpenseEvent {
     groupId: number;
     paidById: number;
   };
+  paidByName: string;
+  groupName: string;
   me: { memberId: number; status: 'pending' | 'accepted' | 'declined' | null };
 }
 
@@ -90,6 +92,8 @@ export class ExpenseStreamService {
             groupId: p.expense?.groupId ?? 0,
             paidById: p.expense?.paidById ?? 0,
           },
+          paidByName: p.paidByName ?? 'Loading...',
+          groupName: p.groupName ?? 'Loading...',
           me: { memberId: p.me?.memberId, status: p.me?.status ?? 'pending' },
         })
       ),

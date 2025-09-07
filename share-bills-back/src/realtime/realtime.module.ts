@@ -1,5 +1,5 @@
 import { Global, Module } from '@nestjs/common';
-import { PendingExpenseBus } from '../pending-expense.bus';
+import { PendingExpenseBus } from './pending-expense.bus';
 
 @Global()
 @Module({

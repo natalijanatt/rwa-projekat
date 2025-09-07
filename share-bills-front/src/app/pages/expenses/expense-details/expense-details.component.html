@@ -1,5 +1,5 @@
 <ng-container *ngIf="expense$ | async as exp; else loading">
-  <div class="page" *ngIf="exp; else notFound">
+  <div class="expense-details-page" *ngIf="exp; else notFound">
     <div class="toolbar">
       <a [routerLink]="['/groups', exp.groupId]" class="back-link">← Back to group</a>
       <span class="status" [ngClass]="{ finalized: exp.finalizedAt, pending: !exp.finalizedAt }">

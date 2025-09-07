@@ -1,17 +1,17 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ExpenseBaseDto } from '../../../feature/expenses/data/expense-base.dto';
 import { ExpenseService } from '../../../feature/expenses/expense.service';
 import { Router } from '@angular/router';
-import { ExpenseGridComponent } from '../../../shared/components/expense-grid/expense-grid.component';
-import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-expenses-missed',
-  imports: [ExpenseGridComponent, NgIf],
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './expenses-missed.component.html',
   styleUrl: './expenses-missed.component.scss'
 })
-export class ExpensesMissedComponent {
+export class ExpensesMissedComponent implements OnInit {
   private expenseService = inject(ExpenseService);
   private router = inject(Router);
 
@@ -29,7 +29,6 @@ export class ExpensesMissedComponent {
 
     this.expenseService.getMissedExpenses().subscribe({
       next: (expenses: ExpenseBaseDto[]) => {
-        // Optional: sort newest first
         this.expenses = [...expenses].sort((a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
@@ -44,11 +43,40 @@ export class ExpensesMissedComponent {
   }
 
   onOpenExpense(expense: ExpenseBaseDto) {
-    // Navigate to your expense details/review route — adjust as needed
     this.router.navigate([`/expenses/${expense.id}/group/${expense.groupId}`]);
+  }
+
+  onAcceptExpense(expense: ExpenseBaseDto) {
+    this.expenseService.respondLate(expense.id, expense.groupId, 'accepted'
+    ).subscribe({
+      next: () => {
+        this.expenses = this.expenses.filter(e => e.id !== expense.id);
+      },
+      error: (err) => {
+        console.error('Error accepting expense:', err);
+        this.error = (err?.error?.message || err?.message || 'Failed to accept expense');
+      }
+    });    
+  }
+
+  onDeclineExpense(expense: ExpenseBaseDto) {
+    this.expenseService.respondLate(expense.id, expense.groupId, 'declined'
+    ).subscribe({
+      next: () => {
+        this.expenses = this.expenses.filter(e => e.id !== expense.id);
+      },
+      error: (err) => {
+        console.error('Error declining expense:', err);
+        this.error = (err?.error?.message || err?.message || 'Failed to decline expense');
+      }
+    });
   }
 
   reload() {
     this.fetchMissed();
+  }
+
+  trackByExpenseId(index: number, expense: ExpenseBaseDto): number {
+    return expense.id;
   }
 }

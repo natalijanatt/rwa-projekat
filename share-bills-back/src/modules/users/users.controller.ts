@@ -11,24 +11,27 @@ import {
   UseInterceptors,
   UploadedFile,
   Query,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  FileTypeValidator,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { FullUserDto } from './dto/full-user.dto';
-import { StorageService } from '../storage/storage.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { PendingExpenseBus } from 'src/realtime/pending-expense.bus';
 import { BaseUserDto } from './dto/base-user.dto';
 import { FilterUserDto } from './dto/filter-user.dto';
+import { ExpensesService } from '../expenses/expenses.service';
+import { StorageService } from '../storage/storage.service';
 
 @Controller('users')
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
+    private readonly expensesService: ExpensesService,
     private storage: StorageService,
-    private readonly bus: PendingExpenseBus,
   ) {}
 
 
@@ -62,26 +65,44 @@ export class UsersController {
     }
     const user = await this.usersService.findOne(userId);
 
+    const expensesCount = await this.expensesService.getExpenseCountForUser(userId);
     return user
       ? {
           ...user,
           imagePath: user.imagePath
             ? this.storage.getPublicUrl(user.imagePath)
             : undefined,
+          expensesCount,
         }
       : null;
   }
 
   @UseGuards(AuthGuard('jwt'))
+  @UseInterceptors(FileInterceptor('file'))
   @Patch()
-  update(
+  async update(
     @Req() req: Request & { user?: { userId: number } },
     @Body(ValidationPipe) user: UpdateUserDto,
+    @UploadedFile(
+      new ParseFilePipe({
+        fileIsRequired: false,
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
+          new FileTypeValidator({ fileType: /(jpg|jpeg|png|webp)$/ }),
+        ],
+      })
+    ) file?: Express.Multer.File
   ) {
     const userId = req.user?.userId;
     if (!userId || isNaN(Number(userId))) {
       throw new BadRequestException('Invalid or missing user id in JWT');
     }
+
+    if(file){
+      const {path} = await this.storage.uploadUserAvatar(userId, file);
+      await this.usersService.updateAvatar(userId, path);
+    }
+
     return this.usersService.update(userId, user);
   }
 

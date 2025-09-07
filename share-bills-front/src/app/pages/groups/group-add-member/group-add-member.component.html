@@ -1,7 +1,7 @@
-<div class="page">
-    <div class="wrapper">
+<div class="group-add-member-page">
+    <div class="group-add-member-wrapper">
 
-        <h2 mat-dialog-title>Add member to "{{ group.name }}"</h2>
+        <h2 mat-dialog-title class="group-add-member-title">Add member to "{{ group.name }}"</h2>
 
         <div class="content" mat-dialog-content>
             <mat-form-field appearance="outline" class="w-full outline-purple">
@@ -19,11 +19,15 @@
 
             <mat-nav-list *ngIf="(results$ | async) as results">
                 <ng-container *ngIf="results.length; else noResults">
-                    <a mat-list-item *ngFor="let u of results; trackBy: trackById" (click)="onMemberSelected(u)">
+                    <a mat-list-item 
+                       *ngFor="let u of results; trackBy: trackById" 
+                       (click)="onMemberSelected(u)"
+                       [class.selected-member]="selectedMember?.id === u.id"
+                       [attr.aria-selected]="selectedMember?.id === u.id">
                         <mat-icon matListItemIcon>person_add</mat-icon>
                         <div matListItemTitle>{{ displayUser(u) }}</div>
                         <div matListItemLine *ngIf="u.email">{{ u.email }}</div>
-                        <mat-icon matListItemMeta *ngIf="selectedMember?.id === u.id">check</mat-icon>
+                        <mat-icon matListItemMeta *ngIf="selectedMember?.id === u.id" class="check-icon">check</mat-icon>
                     </a>
                 </ng-container>
             </mat-nav-list>
@@ -37,8 +41,12 @@
         </div>
 
         <div mat-dialog-actions align="end" class="actions">
-            <app-button [label]="'Cancel'" [variant]="'secondary'" mat-button (click)="onCancel()"/>
-            <app-button [label]="'Add member'" mat-flat-button [variant]="'primary'" (click)="onSubmit()" [disabled]="!selectedMember || loading"/>
+            <button mat-stroked-button class="action-button cancel-button" (click)="onCancel()">
+                Cancel
+            </button>
+            <button mat-flat-button class="action-button submit-button" (click)="onSubmit()" [disabled]="!selectedMember || loading">
+                Add Member
+            </button>
         </div>
 
     </div>

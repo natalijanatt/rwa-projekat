@@ -1,19 +1,18 @@
 import { Component, inject, signal } from '@angular/core';
 import { NgIf } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { map, distinctUntilChanged, filter } from 'rxjs/operators';
+import { map, distinctUntilChanged} from 'rxjs/operators';
 
 import { GroupListComponent } from '../../../shared/components/group-list/group-list.component';
 import { GroupService } from '../../../feature/groups/group.service';
 import { GroupBaseDto } from '../../../feature/groups/data/group-base.dto';
 import { GroupViewComponent } from '../../../shared/components/group-view/group-view.component';
 import { GroupCreateComponent } from '../group-create/group-create.component';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-groups-all',
   standalone: true,
-  imports: [NgIf, GroupListComponent, ButtonComponent, GroupViewComponent, GroupCreateComponent],
+  imports: [NgIf, GroupListComponent, GroupViewComponent, GroupCreateComponent],
   templateUrl: './groups-all.component.html',
   styleUrl: './groups-all.component.scss'
 })

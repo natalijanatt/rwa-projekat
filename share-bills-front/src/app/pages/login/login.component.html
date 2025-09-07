@@ -1,17 +1,81 @@
-<div class="page">
-  <div class="card">
-    <h1 class="title">Sign in</h1>
-    <p class="note" *ngIf="expired">Your session expired. Please sign in again.</p>
+<div class="auth-page">
+  <!-- Background Pattern -->
+  <div class="background-pattern"></div>
+  
+  <!-- Content Container -->
+  <div class="auth-container">
+    <!-- Header Section -->
+    <div class="auth-header">
+      <div class="logo-section">
+        <div class="logo-icon">💰</div>
+        <h1 class="app-title">Share Bills</h1>
+      </div>
+      <h2 class="page-title">Welcome Back</h2>
+      <p class="page-subtitle">Sign in to your account to continue</p>
+    </div>
 
-    <app-form #f="appForm" [form]="form" [submitLabel]="loading ? 'Signing in…' : 'Sign in'" [loading]="loading"
-      [cancelLabel]="'Reset'" (formSubmit)="onSubmit($event)">
-      <app-input-field label="Email" type="text" [required]="true" [submitted]="f.submitted"
-        [value]="form.controls.email.value" (valueChange)="onInputString('email', $event)"></app-input-field>
+    <!-- Login Form Card -->
+    <div class="auth-card">
+      <!-- Session Expired Notice -->
+      <div class="notice-banner expired" *ngIf="expired">
+        <div class="notice-icon">⚠️</div>
+        <div class="notice-content">
+          <h4 class="notice-title">Session Expired</h4>
+          <p class="notice-text">Your session has expired. Please sign in again to continue.</p>
+        </div>
+      </div>
 
-      <app-input-field label="Password" type="password" [required]="true" [submitted]="f.submitted"
-        [value]="form.controls.password.value" (valueChange)="onInputString('password', $event)"></app-input-field>
+      <!-- Login Form -->
+      <app-form #f="appForm" 
+                [form]="form" 
+                [submitLabel]="loading ? 'Signing in...' : 'Sign In'" 
+                [loading]="loading"
+                [cancelLabel]="'Reset'" 
+                (formSubmit)="onSubmit($event)">
+        
+        <app-input-field 
+          label="Email Address" 
+          type="email" 
+          [required]="true" 
+          [submitted]="f.submitted"
+          [value]="form.controls.email.value" 
+          placeholder="Enter your email address"
+          (valueChange)="onInputString('email', $event)">
+        </app-input-field>
 
-      <p class="error" *ngIf="error">{{ error }}</p>
-    </app-form>
+        <app-input-field 
+          label="Password" 
+          type="password" 
+          [required]="true" 
+          [submitted]="f.submitted"
+          [value]="form.controls.password.value" 
+          placeholder="Enter your password"
+          (valueChange)="onInputString('password', $event)">
+        </app-input-field>
+
+        <!-- Error Message -->
+        <div class="error-message" *ngIf="error">
+          <div class="error-icon">❌</div>
+          <div class="error-content">
+            <h4 class="error-title">Login Failed</h4>
+            <p class="error-text">{{ error }}</p>
+          </div>
+        </div>
+      </app-form>
+
+      <!-- Additional Links -->
+      <div class="auth-links">
+        <p class="link-text">
+          Don't have an account? 
+          <a routerLink="/register" class="link-button">Create one here</a>
+        </p>
+        <a routerLink="/forgot-password" class="forgot-password">Forgot your password?</a>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="auth-footer">
+      <p class="footer-text">Secure authentication powered by modern web standards</p>
+    </div>
   </div>
 </div>

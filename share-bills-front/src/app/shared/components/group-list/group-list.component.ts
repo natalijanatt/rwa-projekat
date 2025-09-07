@@ -1,11 +1,11 @@
-import { NgFor } from '@angular/common';
+import { NgFor, NgIf } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { GroupBaseDto } from '../../../feature/groups/data/group-base.dto';
 import { GroupCardComponent } from "../group-card/group-card.component";
 
 @Component({
   selector: 'app-group-list',
-  imports: [NgFor, GroupCardComponent],
+  imports: [NgFor, GroupCardComponent, NgIf],
   templateUrl: './group-list.component.html',
   styleUrl: './group-list.component.scss',
 })

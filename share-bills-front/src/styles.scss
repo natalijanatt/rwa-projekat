@@ -1,22 +1,239 @@
-html{
-    height: 100%;
-    background-color: #2b2b2b;
-}
-html, body, .page, .content {
-    height: 100%;
-}
-body{
-    margin: 0;
-    height: inherit;
-}
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+@use 'app/styles/variables' as *;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
+html {
+  height: 100%;
+  background-color: #1a1a1a;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+html, body, .page, .content {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  height: inherit;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+// Navigation bar spacing fix
+body {
+  padding-top: 80px; // Adjust this value based on your nav bar height
+}
+
+// Global utility classes
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.d-flex { display: flex; }
+.d-grid { display: grid; }
+.d-block { display: block; }
+.d-none { display: none; }
+
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.justify-end { justify-content: flex-end; }
+
+.align-center { align-items: center; }
+.align-start { align-items: flex-start; }
+.align-end { align-items: flex-end; }
+
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+
+// Modal improvements
 .app-modal-panel {
-  border-radius: 12px !important;
-  padding: 16px 20px !important;
+  border-radius: 16px !important;
+  padding: 24px !important;
+  background: #2d2d2d !important;
+  border: 1px solid #404040 !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
 }
 
 .app-modal-backdrop {
-  background: rgba(0, 0, 0, 0.6) !important;
+  background: rgba(0, 0, 0, 0.7) !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+// Scrollbar styling
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #2d2d2d;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #404040;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+// Focus styles for accessibility
+*:focus {
+  outline: 2px solid #007F9F;
+  outline-offset: 2px;
+}
+
+// Selection styling
+::selection {
+  background: rgba(0, 127, 159, 0.3);
+  color: #ffffff;
+}
+
+// Global page transitions
+.page {
+  animation: fadeIn 0.3s ease-out;
+}
+
+// Global loading states
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(26, 26, 26, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(0, 127, 159, 0.3);
+  border-top-color: #007F9F;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+// Global error states
+.error-message {
+  background: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  color: #dc3545;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  &::before {
+    content: '⚠️';
+    font-size: 16px;
+  }
+}
+
+// Global success states
+.success-message {
+  background: rgba(40, 167, 69, 0.1);
+  border: 1px solid rgba(40, 167, 69, 0.3);
+  color: #28a745;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  &::before {
+    content: '✅';
+    font-size: 16px;
+  }
+}
+
+// Global info states
+.info-message {
+  background: rgba(23, 162, 184, 0.1);
+  border: 1px solid rgba(23, 162, 184, 0.3);
+  color: #17a2b8;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  &::before {
+    content: 'ℹ️';
+    font-size: 16px;
+  }
+}
+
+// Material Design Overrides for Dark Theme
+::ng-deep {
+  .mat-mdc-paginator {
+    background: transparent !important;
+    color: #ffffff !important;
+    
+    .mat-mdc-paginator-container {
+      color: #ffffff !important;
+    }
+    
+    .mat-mdc-paginator-page-size {
+      color: #e9ecef !important;
+      
+      .mat-mdc-select-value {
+        color: #ffffff !important;
+      }
+      
+      .mat-mdc-select-arrow {
+        color: #e9ecef !important;
+      }
+    }
+    
+    .mat-mdc-paginator-range-actions {
+      color: #ffffff !important;
+      
+      .mat-mdc-paginator-navigation-previous,
+      .mat-mdc-paginator-navigation-next,
+      .mat-mdc-paginator-navigation-first,
+      .mat-mdc-paginator-navigation-last {
+        color: #007F9F !important;
+        
+        &:disabled {
+          color: #666 !important;
+        }
+      }
+    }
+    
+    .mat-mdc-paginator-range-label {
+      color: #e9ecef !important;
+    }
+  }
+  
+  .mat-mdc-progress-spinner {
+    circle {
+      stroke: #007F9F !important;
+    }
+  }
 }

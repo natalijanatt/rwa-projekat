@@ -18,7 +18,7 @@
         <a routerLink="{{ item.path }}"
            routerLinkActive="active"
            [routerLinkActiveOptions]="{ exact: true }"
-           (click)="close()">
+           (click)="onNavClick(item.path, $event)">
           {{ item.label }}
         </a>
       </li>

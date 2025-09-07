@@ -1,1 +1,71 @@
-<p>home works!</p>
+<div class="home-container">
+  <div class="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title">Welcome to ShareBills</h1>
+      <p class="hero-subtitle">Split expenses, track balances, and manage group finances with ease</p>
+    </div>
+  </div>
+
+  <div class="features-section">
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">👥</div>
+        <h3>My Groups</h3>
+        <p>Manage your expense groups and see all members</p>
+        <app-button 
+          label="Go to Groups" 
+          variant="primary" 
+          size="large"
+          [routerLink]="['/groups']">
+        </app-button>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">💰</div>
+        <h3>My Expenses</h3>
+        <p>View and manage all your personal expenses</p>
+        <app-button 
+          label="View Expenses" 
+          variant="primary" 
+          size="large"
+          [routerLink]="['/expenses/my']">
+        </app-button>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">⏰</div>
+        <h3>Missed Expenses</h3>
+        <p>Check for any expenses you might have missed</p>
+        <app-button 
+          label="Check Missed" 
+          variant="secondary" 
+          size="large"
+          [routerLink]="['/expenses/missed']">
+        </app-button>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">👤</div>
+        <h3>My Profile</h3>
+        <p>Update your profile and account settings</p>
+        <app-button 
+          label="View Profile" 
+          variant="secondary" 
+          size="large"
+          [routerLink]="['/me']">
+        </app-button>
+      </div>
+    </div>
+  </div>
+
+  <div class="cta-section">
+    <h2>Ready to get started?</h2>
+    <p>Create your first group and start splitting expenses with friends and family</p>
+    <app-button 
+      label="Create New Group" 
+      variant="primary" 
+      size="large"
+      [routerLink]="['/groups/create']">
+    </app-button>
+  </div>
+</div>

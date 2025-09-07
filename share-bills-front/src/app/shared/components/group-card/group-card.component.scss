@@ -1,168 +1,182 @@
-.conversation-card {
-    display: flex;
-    align-items: center;
-    font: 400 16px Helvetica Neue, sans-serif;
-    box-shadow: 0 0 2.17382px rgba(0, 0, 0, .049), 0 1.75px 6.01034px rgba(0, 0, 0, .07), 0 3.63px 14.4706px rgba(0, 0, 0, .091), 0 22px 48px rgba(0, 0, 0, .14);
-    background-color: #2b2b2b;
+.group-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #2b2b2b;
+  border-radius: 12px;
+  border: 1px solid #404040;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  
+  &:hover {
+    background: #333333;
+    border-color: #007F9F;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 127, 159, 0.2);
+    
+    .card-arrow .arrow-icon {
+      transform: translateX(4px);
+      color: #007F9F;
+    }
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  &:focus {
+    outline: 2px solid #007F9F;
+    outline-offset: 2px;
+  }
+}
+
+.card-avatar {
+  position: relative;
+  flex-shrink: 0;
+  
+  .avatar-container {
+    width: 48px;
+    height: 48px;
     border-radius: 12px;
-    cursor: pointer;
-    padding: 6px 10px 6px 6px;
-    height: 40px;
-    border: 0;
-    margin: 0.5rem;
     overflow: hidden;
-    position: relative;
-    transition: all 0.2s ease-out;
-}
-
-.conversation-card:hover {
-    height: 56px;
-    padding: 8px 20px 8px 8px;
-    background-color: #161616;
-    transition: all 0.2s ease-out;
-}
-
-.conversation-card:active {
-    transform: scale(0.99);
-}
-
-.content-avatar {
-    width: 30px;
-    height: 30px;
-    margin: 0;
-    transition: all 0.2s ease-out;
-    position: relative;
-}
-
-.conversation-card:hover .content-avatar {
-    width: 40px;
-    height: 40px;
-}
-
-.avatar {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    overflow: hidden;
-    background-color: #5e5e5e;
-}
-
-.user-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.status-user {
-    position: absolute;
-    width: 6px;
-    height: 6px;
-    right: 1px;
-    bottom: 1px;
-    border-radius: 50%;
-    outline: solid 2px #2b2b2b;
-    background-color: #00da00;
-    transition: all 0.2s ease-out;
-    animation: active-status 2s ease-in-out infinite;
-}
-
-.conversation-card:hover .status-user {
-    width: 10px;
-    height: 10px;
-    right: 1px;
-    bottom: 1px;
-    outline: solid 3px #161616;
-}
-
-.notice-content {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: space-between;
-    padding-left: 8px;
-    text-align: initial;
-    color: #fff;
-}
-
-.username {
-    letter-spacing: -6px;
-    height: 0;
-    opacity: 0;
-    transform: translateY(-20px);
-    transition: all 0.2s ease-out;
-}
-
-.user-id {
-    font-size: 12px;
-    letter-spacing: -6px;
-    height: 0;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.2s ease-out;
-}
-
-.lable-message {
+    background: #404040;
     display: flex;
     align-items: center;
-    opacity: 1;
-    transform: scaleY(1);
-    transition: all 0.2s ease-out;
-}
-
-.conversation-card:hover .username {
-    height: auto;
-    letter-spacing: normal;
-    opacity: 1;
-    transform: translateY(0);
-    transition: all 0.2s ease-out;
-}
-
-.conversation-card:hover .user-id {
-    height: auto;
-    letter-spacing: normal;
-    opacity: 1;
-    transform: translateY(0);
-    transition: all 0.2s ease-out;
-}
-
-.conversation-card:hover .lable-message {
-    height: 0;
-    transform: scaleY(0);
-    transition: all 0.2s ease-out;
-}
-
-.lable-message,
-.username {
-    font-weight: 600;
-}
-
-.number-message {
-    display: flex;
     justify-content: center;
-    align-items: center;
-    text-align: center;
-    margin-left: 8px;
-    font-size: 12px;
-    width: 21px;
-    height: 21px;
-    background-color: #5e5e5e;
-    border-radius: 20px;
+    
+    .group-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .fallback-icon {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #007F9F, #6f42c1);
+      
+      .icon {
+        font-size: 1.5rem;
+        color: #ffffff;
+      }
+    }
+  }
+  
+  .status-indicator {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #2b2b2b;
+    
+    .status-dot {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      display: block;
+    }
+    
+    &.status-active {
+      .status-dot {
+        background: #28a745;
+        box-shadow: 0 0 8px rgba(40, 167, 69, 0.5);
+        animation: pulse 2s infinite;
+      }
+    }
+    
+    &.status-inactive {
+      .status-dot {
+        background: #6c757d;
+      }
+    }
+  }
 }
 
-@keyframes active-status {
-    0% {
-        background-color: #00da00;
+.card-content {
+  flex: 1;
+  min-width: 0;
+  
+  .group-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+  }
+  
+  .group-info {
+    .member-count {
+      font-size: 0.75rem;
+      color: #adb5bd;
+      font-weight: 500;
     }
+  }
+}
 
-    33.33% {
-        background-color: #93e200;
-    }
+.card-arrow {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  
+  .arrow-icon {
+    font-size: 1rem;
+    color: #6c757d;
+    transition: all 0.2s ease;
+    font-weight: 600;
+  }
+}
 
-    66.33% {
-        background-color: #93e200;
-    }
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(40, 167, 69, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+  }
+}
 
-    100% {
-        background-color: #00da00;
+/* Responsive Design */
+@media (max-width: 480px) {
+  .group-card {
+    padding: 0.75rem;
+    gap: 0.75rem;
+    
+    .card-avatar .avatar-container {
+      width: 40px;
+      height: 40px;
+      
+      .fallback-icon .icon {
+        font-size: 1.25rem;
+      }
     }
+    
+    .card-content .group-name {
+      font-size: 0.8rem;
+    }
+    
+    .card-content .group-info .member-count {
+      font-size: 0.7rem;
+    }
+    
+    .card-arrow .arrow-icon {
+      font-size: 0.875rem;
+    }
+  }
 }

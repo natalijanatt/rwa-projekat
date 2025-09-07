@@ -52,7 +52,7 @@ export class ExpenseService {
   }
 
   getExpense(expenseId: number, groupId: number) {
-    const url = `${this.base}/expenses/${expenseId}/${groupId}`;
+    const url = `${this.base}/expenses/group/${groupId}/${expenseId}`;
     return this.http.get<FullExpenseDto>(url).pipe(
       catchError((err: HttpErrorResponse) => {
         const msg =

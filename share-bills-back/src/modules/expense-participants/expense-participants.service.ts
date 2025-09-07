@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -16,12 +16,13 @@ import { BaseExpenseDto } from '../expenses/dto/base-expense.dto';
 @Injectable()
 export class ExpenseParticipantsService {
   constructor(
-    @InjectRepository(ExpenseParticipant)
-    private readonly repo: Repository<ExpenseParticipant>,
-    private readonly expenseService: ExpensesService,
-    private readonly groupMembersBalanceService: GroupMembersBalanceService,
-    private readonly finalizer: ExpenseFinalizerService,
-  ) {}
+  @InjectRepository(ExpenseParticipant)
+  private readonly repo: Repository<ExpenseParticipant>,
+  @Inject(forwardRef(() => ExpensesService))
+  private readonly expenseService: ExpensesService,
+  private readonly groupMembersBalanceService: GroupMembersBalanceService,
+  private readonly finalizer: ExpenseFinalizerService,
+) {}
 
   async checkParticipant(expenseId: number, userId: number, memberId: number) {
     const participant = await this.repo
@@ -44,7 +45,6 @@ export class ExpenseParticipantsService {
       map((expense: Expense | null) => {
         if (!expense) return { data: { msLeft: 0, finalized: true } };
 
-        // acceptanceDeadline can be Date or string; both work with new Date(...)
         const deadlineMs = new Date(expense.acceptanceDeadline).getTime();
         const msLeft = Math.max(0, deadlineMs - Date.now());
 
@@ -157,7 +157,6 @@ export class ExpenseParticipantsService {
       const now = new Date();
       const deadline = new Date(exp.acceptanceDeadline);
 
-      // If not forced and not yet past deadline, bail
       if (!force && now < deadline) {
         return {
           finalized: false,
@@ -214,6 +213,9 @@ export class ExpenseParticipantsService {
     return this.repo
       .createQueryBuilder('p')
       .leftJoinAndSelect('p.expense', 'expense')
+      .leftJoinAndSelect('expense.group', 'group')
+      .leftJoinAndSelect('expense.paidBy', 'paidBy')
+      .leftJoinAndSelect('paidBy.user', 'paidByUser')
       .innerJoin('p.member', 'member')
       .leftJoinAndSelect('member.user', 'user')
       .where('user.id = :userId', { userId })

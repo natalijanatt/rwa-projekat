@@ -1,47 +1,120 @@
-<div class="page">
-  <!-- Loading -->
-  <div class="card" *ngIf="!user">
-    <h2 class="title">Loading profile…</h2>
+<div class="profile-page">
+  <!-- Header Section -->
+  <div class="page-header">
+    <h1 class="page-title">My Profile</h1>
+    <p class="page-subtitle">Manage your account information and preferences</p>
   </div>
 
-  <div class="card" *ngIf="user as u">
-    <h1 class="title heading">{{ u.name || 'User' }}</h1>
-
-    <div class="details">
-      <div class="left">
-
-        <ng-container *ngIf="u.imagePath; else initials">
-          <img [src]="u.imagePath" alt="User avatar" style="width:80px;height:80px;border-radius:50%;object-fit:cover" />
-        </ng-container>
-        <ng-template #initials>
-          <div aria-hidden="true"
-          style="width:100%;aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;background:#333;color:#fff">
-          {{ (u.name || u.email).charAt(0) | uppercase }}
+  <!-- Content Section -->
+  <ng-container *ngIf="user; else loading">
+    <div class="content-section">
+      <!-- Profile Card -->
+      <div class="profile-card">
+        <!-- Avatar Section -->
+        <div class="avatar-section">
+          <ng-container *ngIf="user.imagePath; else initials">
+            <div class="avatar-image">
+              <img [src]="user.imagePath" alt="User avatar" />
+            </div>
+          </ng-container>
+          <ng-template #initials>
+            <div class="avatar-initials" aria-hidden="true">
+              {{ (user.name || user.email).charAt(0) | uppercase }}
+            </div>
+          </ng-template>
+          
+          <div class="avatar-info">
+            <h2 class="user-name">{{ user.name || 'User' }}</h2>
+            <p class="user-email">{{ user.email }}</p>
+          </div>
         </div>
-      </ng-template>
-    </div>
-    <div class="right">
-    <div>
-      <div class="title">Email</div>
-      <div style="color:#ddd">{{ u.email }}</div>
-    </div>
 
-    <div *ngIf="u.name">
-      <div class="title">Full name</div>
-      <div style="color:#ddd">{{ u.name }}</div>
-    </div>
+        <!-- Profile Details -->
+        <div class="profile-details">
+          <div class="detail-section">
+            <h3 class="section-title">Account Information</h3>
+            
+            <div class="detail-grid">
+              <div class="detail-item">
+                <div class="detail-label">
+                  <span class="label-icon">👤</span>
+                  Full Name
+                </div>
+                <div class="detail-value">{{ user.name || 'Not provided' }}</div>
+              </div>
 
-    <div>
-      <div class="title">Member since</div>
-      <div style="color:#ddd">{{ u.createdAt | date:'mediumDate' }}</div>
-    </div>
+              <div class="detail-item">
+                <div class="detail-label">
+                  <span class="label-icon">📧</span>
+                  Email Address
+                </div>
+                <div class="detail-value">{{ user.email }}</div>
+              </div>
 
-    <!-- Actions -->
-    <div style="display:flex; gap:.5rem; margin-top:.5rem">
-      <app-button label="Update" routerLink="/app"/>
-      <app-button label="Log out" [variant]="'danger'" routerLink="/logout"/>
+              <div class="detail-item">
+                <div class="detail-label">
+                  <span class="label-icon">📅</span>
+                  Member Since
+                </div>
+                <div class="detail-value">{{ user.createdAt | date:'longDate' }}</div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Account Stats -->
+          <div class="stats-section">
+            <h3 class="section-title">Account Statistics</h3>
+            
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-content">
+                  <div class="stat-value">{{ user.expensesCount || 0 }}</div>
+                  <div class="stat-label">Total Expenses</div>
+                </div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-content">
+                  <div class="stat-value">{{ user.groupsOwned.length || 0 }}</div>
+                  <div class="stat-label">Groups Owned</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="profile-actions">
+          <button class="action-button primary" (click)="onUpdateProfile()">
+            <span class="button-icon">✏️</span>
+            Update Profile
+          </button>
+          
+          <button class="action-button secondary" routerLink="/app/settings">
+            <span class="button-icon">⚙️</span>
+            Settings
+          </button>
+          
+          <button class="action-button danger" routerLink="/logout">
+            <span class="button-icon">🚪</span>
+            Log Out
+          </button>
+        </div>
+      </div>
     </div>
+  </ng-container>
+
+  <!-- Loading State -->
+  <ng-template #loading>
+    <div class="loading-state">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+      </div>
+      <p class="loading-text">Loading your profile...</p>
     </div>
-     </div>
-  </div>
+  </ng-template>
 </div>

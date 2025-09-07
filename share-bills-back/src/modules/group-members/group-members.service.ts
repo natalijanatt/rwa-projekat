@@ -20,7 +20,11 @@ export class GroupMembersService {
     }
 
     async findOne(id: number): Promise<GroupMember | null> {
-        return this.repo.findOneBy({ id });
+        // return this.repo.findOneBy({ id });
+        return this.repo.findOne({
+            where: { id },
+            relations: ['user', 'group'],
+        });
     }
 
     async addMemberToGroup(groupId: number, userId: number): Promise<GroupMember> {
@@ -49,16 +53,21 @@ export class GroupMembersService {
     async emitToGroup(groupId: number, expense: Expense) {
 
         const members = await this.getMembers(groupId);
+        const paidBy = await this.findOne(expense.paidById);
+        const paidByName = paidBy?.user.name || 'Loading...';
+        const groupName = paidBy?.group.name || 'Loading...';
         members.forEach(member => {
             if(member.id === expense.paidById) {
                 return;}
             const ev: PendingExpenseEvent = {
                 type: 'pending-expense',
                 expense,
+                groupName: groupName,
+                paidByName: paidByName,
                 me: { status: ParticipantStatus.Pending, memberId: member.id },
             };
             this.bus.emitToUser(member.userId, ev);
-            console.log('[BUS] emit to', member.userId, ev.expense.id);
+            console.log('[BUS] emit to', member.userId, ev.expense.id, groupName, paidByName);
 
         });
     }

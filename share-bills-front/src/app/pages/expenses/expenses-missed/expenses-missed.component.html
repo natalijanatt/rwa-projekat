@@ -1,40 +1,135 @@
-<div class="page">
-  <header class="header">
-    <div class="titles">
-      <h1>Missed expenses</h1>
-      <p class="subtitle">Expenses that passed their acceptance window.</p>
+<div class="expenses-page">
+  <!-- Header Section -->
+  <div class="page-header">
+    <h1 class="page-title">Missed Expenses</h1>
+    <p class="page-subtitle">Expenses that passed their acceptance window and need your attention</p>
+  </div>
+
+  <!-- Actions Section -->
+  <div class="actions-section">
+    <button type="button" class="action-button primary" (click)="reload()">
+      <span class="button-icon">🔄</span>
+      Reload
+    </button>
+  </div>
+
+  <!-- Content Section -->
+  <ng-container *ngIf="!loading && !error">
+    <div *ngIf="expenses?.length; else empty" class="content-section">
+      <!-- Summary Section -->
+      <div class="summary-section">
+        <div class="summary-card">
+          <div class="summary-icon">⚠️</div>
+          <div class="summary-content">
+            <h3 class="summary-value">{{ expenses.length }}</h3>
+            <p class="summary-label">Missed Expenses</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expenses List -->
+      <div class="expenses-list">
+        <div class="expense-item missed" *ngFor="let expense of expenses; trackBy: trackByExpenseId">
+          <!-- Expense Header -->
+          <div class="expense-header">
+            <div class="expense-title-section">
+              <h3 class="expense-title">{{ expense.title }}</h3>
+              <div class="expense-status status-missed">
+                Missed
+              </div>
+            </div>
+            <div class="expense-amount">
+              <span class="amount-value">{{ expense.amount | currency:'RSD':'symbol':'1.0-0' }}</span>
+              <span class="currency-code">RSD</span>
+            </div>
+          </div>
+
+          <!-- Expense Details -->
+          <div class="expense-details">
+            <div class="detail-row">
+              <div class="detail-item">
+                <span class="detail-label">Group:</span>
+                <span class="detail-value">{{ expense.group.name }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Paid by:</span>
+                <span class="detail-value">{{ expense.paidBy.user.name }}</span>
+              </div>
+            </div>
+            
+            <div class="detail-row">
+              <div class="detail-item">
+                <span class="detail-label">Type:</span>
+                <span class="detail-value type-badge" [class]="'type-' + expense.txnType">
+                  {{ expense.txnType | titlecase }}
+                </span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Created:</span>
+                <span class="detail-value">{{ expense.createdAt | date:'mediumDate' }}</span>
+              </div>
+            </div>
+
+            <div class="detail-row" *ngIf="expense.finalizedAt">
+              <div class="detail-item">
+                <span class="detail-label">Finalized:</span>
+                <span class="detail-value">{{ expense.finalizedAt | date:'mediumDate' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Expense Actions -->
+          <div class="expense-actions">
+            <button class="action-button primary" (click)="onOpenExpense(expense)">
+              <span class="button-icon">📋</span>
+              Review
+            </button>
+            <button class="action-button secondary" (click)="onAcceptExpense(expense)">
+              <span class="button-icon">✅</span>
+              Accept
+            </button>
+            <button class="action-button danger" (click)="onDeclineExpense(expense)">
+              <span class="button-icon">❌</span>
+              Decline
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="actions">
-      <button type="button" class="btn secondary" (click)="reload()">Reload</button>
+    <ng-template #empty>
+      <div class="empty-state">
+        <div class="empty-icon">🎉</div>
+        <h3 class="empty-title">No missed expenses!</h3>
+        <p class="empty-description">You're all caught up. All your expenses have been properly handled.</p>
+        <button class="empty-action-button" (click)="reload()">
+          <span class="button-icon">🔄</span>
+          Refresh
+        </button>
+      </div>
+    </ng-template>
+  </ng-container>
+
+  <!-- Loading State -->
+  <ng-container *ngIf="loading">
+    <div class="loading-state">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+      </div>
+      <p class="loading-text">Loading missed expenses...</p>
     </div>
-  </header>
+  </ng-container>
 
-  <section class="state" *ngIf="loading">
-    <div class="spinner" aria-label="Loading"></div>
-    <div class="state-text">Loading missed expenses…</div>
-  </section>
-
-  <section class="state error" *ngIf="!loading && error">
-    <div class="state-text">Error: {{ error }}</div>
-    <button type="button" class="btn primary" (click)="reload()">Try again</button>
-  </section>
-
-  <section *ngIf="!loading && !error">
-    <div class="count" *ngIf="expenses?.length">
-      <span>{{ expenses.length }}</span> total
+  <!-- Error State -->
+  <ng-container *ngIf="!loading && error">
+    <div class="error-state">
+      <div class="error-icon">⚠️</div>
+      <h3 class="error-title">Error Loading Expenses</h3>
+      <p class="error-description">{{ error }}</p>
+      <button class="error-action-button" (click)="reload()">
+        <span class="button-icon">🔄</span>
+        Try Again
+      </button>
     </div>
-
-    <app-expense-grid
-      [expenses]="expenses"
-      currencyCode="EUR"
-      buttonLabel="Review"
-      (openExpense)="onOpenExpense($event)"
-    ></app-expense-grid>
-
-    <div class="empty" *ngIf="!expenses?.length">
-      <div class="title">No missed expenses 🎉</div>
-      <div class="subtitle">You’re all caught up.</div>
-    </div>
-  </section>
+  </ng-container>
 </div>

@@ -1,24 +1,112 @@
-<app-expense-filters (filtersChange)="onFiltersChange($event)"></app-expense-filters>
+<div class="expenses-page">
+  <!-- Header Section -->
+  <div class="page-header">
+    <h1 class="page-title">My Expenses</h1>
+    <p class="page-subtitle">Track and manage all your shared expenses</p>
+  </div>
 
-<ng-container *ngIf="page$ | async as page; else loading">
-    <div *ngIf="page.items?.length; else empty" class="content">
-        <app-expense-grid [expenses]="page.items" [currencyCode]="'RSD'" [buttonLabel]="'Open'"
-            (openExpense)="onOpenExpense($event)">
-        </app-expense-grid>
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <app-expense-filters (filtersChange)="onFiltersChange($event)"></app-expense-filters>
+  </div>
 
-        <mat-paginator [length]="page.totalItems" [pageSize]="page.pageSize ? page.pageSize : 20"
-            [pageIndex]="Math.max((page.page) - 1, 0)"
-            (page)="onPageChange($event)">
+  <!-- Content Section -->
+  <ng-container *ngIf="page$ | async as page; else loading">
+    <div *ngIf="page.items?.length; else empty" class="content-section">
+      <!-- Expenses List -->
+      <div class="expenses-list">
+        <div class="expense-item" *ngFor="let expense of page.items; trackBy: trackByExpenseId">
+          <!-- Expense Header -->
+          <div class="expense-header">
+            <div class="expense-title-section">
+              <h3 class="expense-title">{{ expense.title }}</h3>
+              <div class="expense-status" [class]="getStatusClass(expense)">
+                {{ getStatusText(expense) }}
+              </div>
+            </div>
+            <div class="expense-amount">
+              <span class="amount-value">{{ expense.amount | currency:'RSD':'symbol':'1.0-0' }}</span>
+              <span class="currency-code">RSD</span>
+            </div>
+          </div>
+
+          <!-- Expense Details -->
+          <div class="expense-details">
+            <div class="detail-row">
+              <div class="detail-item">
+                <span class="detail-label">Group:</span>
+                <span class="detail-value">{{ expense.group.name }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Paid by:</span>
+                <span class="detail-value">{{ expense.paidBy.user.name }}</span>
+              </div>
+            </div>
+            
+            <div class="detail-row">
+              <div class="detail-item">
+                <span class="detail-label">Type:</span>
+                <span class="detail-value type-badge" [class]="'type-' + expense.txnType">
+                  {{ expense.txnType | titlecase }}
+                </span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Created:</span>
+                <span class="detail-value">{{ expense.createdAt | date:'mediumDate' }}</span>
+              </div>
+            </div>
+
+            <div class="detail-row" *ngIf="expense.finalizedAt">
+              <div class="detail-item">
+                <span class="detail-label">Finalized:</span>
+                <span class="detail-value">{{ expense.finalizedAt | date:'mediumDate' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Expense Actions -->
+          <div class="expense-actions">
+            <button class="action-button primary" (click)="onOpenExpense(expense)">
+              <span class="button-icon">📋</span>
+              View Details
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-section">
+        <mat-paginator 
+          [length]="page.totalItems" 
+          [pageSize]="page.pageSize ? page.pageSize : 20"
+          [pageIndex]="Math.max((page.page) - 1, 0)"
+          [pageSizeOptions]="[10, 20, 50, 100]"
+          showFirstLastButtons
+          (page)="onPageChange($event)">
         </mat-paginator>
+      </div>
     </div>
 
     <ng-template #empty>
-        <div class="empty">No expenses found with the current filters.</div>
+      <div class="empty-state">
+        <div class="empty-icon">📝</div>
+        <h3 class="empty-title">No expenses found</h3>
+        <p class="empty-description">No expenses match your current filters. Try adjusting your search criteria or create a new expense.</p>
+        <button class="empty-action-button" (click)="onCreateNewExpense()">
+          <span class="button-icon">➕</span>
+          Create New Expense
+        </button>
+      </div>
     </ng-template>
-</ng-container>
+  </ng-container>
 
-<ng-template #loading>
-    <div class="loading">
-        <mat-progress-spinner mode="indeterminate" diameter="36"></mat-progress-spinner>
+  <!-- Loading State -->
+  <ng-template #loading>
+    <div class="loading-state">
+      <div class="loading-spinner">
+        <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
+      </div>
+      <p class="loading-text">Loading your expenses...</p>
     </div>
-</ng-template>
+  </ng-template>
+</div>

@@ -5,6 +5,7 @@ import { GroupMemberBalance } from './group-members-balance.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([GroupMemberBalance])],
-  providers: [GroupMembersBalanceService]
+  providers: [GroupMembersBalanceService],
+  exports: [GroupMembersBalanceService],
 })
 export class GroupMembersBalanceModule {}

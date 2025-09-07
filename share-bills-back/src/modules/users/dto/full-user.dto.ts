@@ -9,8 +9,9 @@ export class FullUserDto {
   createdAt: Date;
   groupsOwned: number[];
   memberships: number[];
+  expensesCount?: number;
 
-  constructor(entity: User) {
+  constructor(entity: User, expensesCount?: number) {
     this.id = entity.id;
     this.name = entity.name;
     this.email = entity.email;
@@ -19,5 +20,6 @@ export class FullUserDto {
     this.createdAt = entity.createdAt;
     this.groupsOwned = entity.groupsOwned?.map((g) => g.id);
     this.memberships = entity.memberships?.map((gm) => gm.groupId);
+    this.expensesCount = expensesCount;
   }
 }

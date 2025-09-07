@@ -9,12 +9,14 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { FilterUserDto } from './dto/filter-user.dto';
+import { ExpensesService } from '../expenses/expenses.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly repo: Repository<User>,
+    private readonly expensesService: ExpensesService,
   ) {}
 
   async findAll(filter? : FilterUserDto): Promise<BaseUserDto[]> {
@@ -40,6 +42,7 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
+    const expensesCount = await this.expensesService.getExpenseCountForUser(id);
     return new FullUserDto(user);
   }
 

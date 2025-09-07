@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 import { AuthService } from '../../core/auth/auth.service';
@@ -12,7 +12,8 @@ import { UserCreateDto } from '../../feature/users/data/user-create.dto';
 
 @Component({
   selector: 'app-register',
-  imports: [CommonModule, FormComponent, InputFieldComponent, ImageUploaderComponent],
+  standalone: true,
+  imports: [CommonModule, FormComponent, InputFieldComponent, ImageUploaderComponent, RouterLink],
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss'
 })

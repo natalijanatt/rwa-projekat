@@ -1,7 +1,14 @@
-<div class="conversation-list">
+<div class="groups-list">
   <ng-container *ngFor="let group of groups">
-    <div class="conversation-date-block">
-        <app-group-card [group]="group" (open)="onOpen(group.id)"></app-group-card>
+    <div class="group-item">
+      <app-group-card [group]="group" (open)="onOpen(group.id)"></app-group-card>
     </div>
   </ng-container>
+  
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!groups || groups.length === 0">
+    <div class="empty-icon">👥</div>
+    <h3 class="empty-title">No Groups Yet</h3>
+    <p class="empty-description">You haven't joined or created any groups yet.</p>
+  </div>
 </div>

@@ -1,65 +1,127 @@
-<div class="group-card" *ngIf="group(); else loading">
-  <div class="media">
-    <img [ngSrc]="group()?.imagePath || 'assets/group-placeholder.webp'" width="320" height="180"
-      alt="{{ group()?.name }}" (error)="onImgError($event)" />
-    <div class="actions">
-      <button type="button" class="btn" (click)="onUpdate()">Update</button>
-      <button type="button" class="btn primary" (click)="onAddExpense()">Add Expense</button>
-      <button type="button" class="btn" (click)="onAddMember()">Add Member</button>
+<div class="group-view" *ngIf="group(); else loading">
+  <!-- Group Header -->
+  <div class="group-header">
+    <div class="group-image">
+      <img [ngSrc]="group()?.imagePath || 'assets/group-placeholder.webp'" 
+           width="320" height="180"
+           alt="{{ group()?.name }}" 
+           (error)="onImgError($event)" />
+      <div class="image-overlay">
+        <button class="overlay-button" (click)="onUpdate()">
+          <span class="button-icon">✏️</span>
+          Edit
+        </button>
+      </div>
+    </div>
+    
+    <div class="group-info">
+      <h1 class="group-title">{{ group()?.name }}</h1>
+      
+      <div class="group-meta">
+        <div class="meta-item">
+          <span class="meta-label">Owner:</span>
+          <span class="meta-value">{{ group()?.owner?.name }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Members:</span>
+          <span class="meta-value">{{ membersCount }}</span>
+        </div>
+      </div>
+      
+      <div class="group-actions">
+        <button class="action-button primary" (click)="onAddExpense()">
+          <span class="button-icon">💰</span>
+          Add Expense
+        </button>
+        <button class="action-button secondary" (click)="onAddMember()">
+          <span class="button-icon">👥</span>
+          Add Member
+        </button>
+      </div>
     </div>
   </div>
 
-  <div class="content">
-    <h1 class="title" title="{{ group()?.name }}">{{ group()?.name }}</h1>
-
-    <div class="meta">
-      <div class="meta-row">
-        <span class="label">Owner:</span>
-        <span class="value">{{ group()?.owner?.name }}</span>
-      </div>
-      <div class="meta-row">
-        <span class="label">Member count:</span>
-        <span class="value">{{ membersCount }}</span>
+  <!-- Members Section -->
+  <div class="members-section">
+    <div class="section-header">
+      <h2 class="section-title">Group Members</h2>
+      <div class="member-count">
+        <span class="count-number">{{ membersCount }}</span>
+        <span class="count-label">members</span>
       </div>
     </div>
 
-    <!-- Members list (scrollable) -->
-    <div class="members">
-      <div class="members-header">
-        <h2>Members</h2>
-        <span class="badge">{{ membersCount }}</span>
-      </div>
-
-      <div class="member-list" role="list" [attr.aria-label]="'Members of ' + group.name">
-        <div class="member-item" *ngFor="let m of group()?.members; trackBy: trackByMemberId" role="listitem">
-          <img class="avatar" [ngSrc]="m.user.imagePath || 'assets/avatar-placeholder.webp'" width="40" height="40"
-            alt="{{ m.user.name || 'Member' }}" (error)="onMemberImgError($event)" />
-          <div class="member-info">
-            <div class="info">
-              <div class="name" [title]="m.user.name">{{ m.user.name }}</div>
-              <div class="email" [title]="m.user.email">{{ m.user.email }}</div>
-            </div>
-            <div [ngClass]="memberBalance(m).owed ? 'balance-red' : 'balance-green'">
-              {{ memberBalance(m).status }}
-            </div>
+    <div class="members-grid" *ngIf="membersCount > 0; else noMembers">
+      <div class="member-card" 
+           *ngFor="let m of group()?.members; trackBy: trackByMemberId">
+        <div class="member-avatar">
+          <img [ngSrc]="m.user.imagePath || 'assets/avatar-placeholder.webp'" 
+               width="48" height="48"
+               alt="{{ m.user.name || 'Member' }}" 
+               (error)="onMemberImgError($event)" />
+          <div class="member-status" [class]="memberBalance(m).owed ? 'status-owed' : 'status-credit'">
+            <span class="status-dot"></span>
           </div>
         </div>
-
-        <div class="empty" *ngIf="membersCount === 0">No members yet.</div>
+        
+        <div class="member-details">
+          <div class="member-name">{{ m.user.name }}</div>
+          <div class="member-email">{{ m.user.email }}</div>
+        </div>
+        
+        <div class="member-balance" [class]="memberBalance(m).owed ? 'balance-owed' : 'balance-credit'">
+          <span class="balance-amount">{{ memberBalance(m).status }}</span>
+        </div>
       </div>
     </div>
 
-
+    <ng-template #noMembers>
+      <div class="empty-members">
+        <div class="empty-icon">👥</div>
+        <h3 class="empty-title">No Members Yet</h3>
+        <p class="empty-description">This group doesn't have any members yet. Start by adding some friends!</p>
+        <button class="empty-action-button" (click)="onAddMember()">
+          <span class="button-icon">➕</span>
+          Add First Member
+        </button>
+      </div>
+    </ng-template>
   </div>
 </div>
 
+<!-- Loading State -->
 <ng-template #loading>
-  <div class="skeleton">
-    <div class="sk-img"></div>
-    <div class="sk-lines">
-      <div class="sk-line w-60"></div>
-      <div class="sk-line w-40"></div>
-      <div class="sk-line w-30"></div>
+  <div class="loading-skeleton">
+    <div class="skeleton-header">
+      <div class="skeleton-image"></div>
+      <div class="skeleton-content">
+        <div class="skeleton-title"></div>
+        <div class="skeleton-meta">
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line"></div>
+        </div>
+        <div class="skeleton-actions">
+          <div class="skeleton-button"></div>
+          <div class="skeleton-button"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="skeleton-members">
+      <div class="skeleton-section-header">
+        <div class="skeleton-line"></div>
+        <div class="skeleton-badge"></div>
+      </div>
+      <div class="skeleton-member-list">
+        <div class="skeleton-member" *ngFor="let i of [1,2,3]">
+          <div class="skeleton-avatar"></div>
+          <div class="skeleton-member-info">
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+          </div>
+          <div class="skeleton-balance"></div>
+        </div>
+      </div>
     </div>
   </div>
 </ng-template>

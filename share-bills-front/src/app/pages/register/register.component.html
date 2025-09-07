@@ -1,32 +1,104 @@
-<div class="page">
-    <div class="card">
-        <h1 class="title">Register</h1>
-
-        <app-form #f="appForm" [form]="form" [submitLabel]="loading ? 'Signing in…' : 'Sign in'" [loading]="loading"
-            [cancelLabel]="'Reset'" (formSubmit)="onSubmit($event, form.controls.confirmPassword.value)">
-            <app-input-field label="Name" type="text" [required]="true" [submitted]="f.submitted"
-                [placeholder]="'Enter your name'" [value]="form.controls.name.value"
-                (valueChange)="onInputString('name', $event)"></app-input-field>
-
-            <app-input-field label="Email" type="text" [required]="true" [submitted]="f.submitted"
-                [placeholder]="'Enter your email'" [value]="form.controls.email.value"
-                (valueChange)="onInputString('email', $event)"></app-input-field>
-
-            <app-input-field label="Password" type="password" [required]="true" [submitted]="f.submitted"
-                [value]="form.controls.passwordHash.value" [placeholder]="'Enter your password'"
-                (valueChange)="onInputString('passwordHash', $event)"></app-input-field>
-
-            <app-input-field label="Confirm password" type="password" [required]="true" [submitted]="f.submitted"
-                [value]="form.controls.confirmPassword.value" [placeholder]="'Confirm password'"
-                (valueChange)="onInputString('confirmPassword', $event)"></app-input-field>
-
-
-            <app-image-uploader [emitOnSelect]="true" [disabled]="loading" accept="image/png,image/jpeg,image/webp"
-                label="Avatar" (fileChange)="onAvatarSelected($event)" (error)="onAvatarError($event)">
-            </app-image-uploader>
-            <p class="error" *ngIf="error">{{ error }}</p>
-
-
-        </app-form>
+<div class="auth-page">
+  <!-- Background Pattern -->
+  <div class="background-pattern"></div>
+  
+  <!-- Content Container -->
+  <div class="auth-container">
+    <!-- Header Section -->
+    <div class="auth-header">
+      <div class="logo-section">
+        <div class="logo-icon">💰</div>
+        <h1 class="app-title">Share Bills</h1>
+      </div>
+      <h2 class="page-title">Create Account</h2>
+      <p class="page-subtitle">Join us to start sharing and managing expenses</p>
     </div>
+
+    <!-- Registration Form Card -->
+    <div class="auth-card">
+      <!-- Registration Form -->
+      <app-form #f="appForm" 
+                [form]="form" 
+                [submitLabel]="loading ? 'Creating Account...' : 'Create Account'" 
+                [loading]="loading"
+                [cancelLabel]="'Reset'" 
+                (formSubmit)="onSubmit($event, form.controls.confirmPassword.value)">
+        
+        <app-input-field 
+          label="Full Name" 
+          type="text" 
+          [required]="true" 
+          [submitted]="f.submitted"
+          [placeholder]="'Enter your full name'" 
+          [value]="form.controls.name.value"
+          (valueChange)="onInputString('name', $event)">
+        </app-input-field>
+
+        <app-input-field 
+          label="Email Address" 
+          type="email" 
+          [required]="true" 
+          [submitted]="f.submitted"
+          [placeholder]="'Enter your email address'" 
+          [value]="form.controls.email.value"
+          (valueChange)="onInputString('email', $event)">
+        </app-input-field>
+
+        <app-input-field 
+          label="Password" 
+          type="password" 
+          [required]="true" 
+          [submitted]="f.submitted"
+          [value]="form.controls.passwordHash.value" 
+          [placeholder]="'Create a strong password'"
+          (valueChange)="onInputString('passwordHash', $event)">
+        </app-input-field>
+
+        <app-input-field 
+          label="Confirm Password" 
+          type="password" 
+          [required]="true" 
+          [submitted]="f.submitted"
+          [value]="form.controls.confirmPassword.value" 
+          [placeholder]="'Confirm your password'"
+          (valueChange)="onInputString('confirmPassword', $event)">
+        </app-input-field>
+
+        <!-- Avatar Upload -->
+        <div class="avatar-section">
+          <label class="avatar-label">Profile Picture (Optional)</label>
+          <app-image-uploader 
+            [emitOnSelect]="true" 
+            [disabled]="loading" 
+            accept="image/png,image/jpeg,image/webp"
+            label="Avatar" 
+            (fileChange)="onAvatarSelected($event)" 
+            (error)="onAvatarError($event)">
+          </app-image-uploader>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error-message" *ngIf="error">
+          <div class="error-icon">❌</div>
+          <div class="error-content">
+            <h4 class="error-title">Registration Failed</h4>
+            <p class="error-text">{{ error }}</p>
+          </div>
+        </div>
+      </app-form>
+
+      <!-- Additional Links -->
+      <div class="auth-links">
+        <p class="link-text">
+          Already have an account? 
+          <a routerLink="/login" class="link-button">Sign in here</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="auth-footer">
+      <p class="footer-text">Secure registration with modern encryption standards</p>
+    </div>
+  </div>
 </div>
