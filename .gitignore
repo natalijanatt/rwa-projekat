@@ -1,5 +1,4 @@
 supabase/
 node_modules
 .env
-supabase-project/
 db.sql
