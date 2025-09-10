@@ -67,7 +67,6 @@ export class RealtimeController {
       this.expenseParticipants.findPendingEventsForUser(userId),
     ).pipe(
       concatMap((rows) => from(rows)),
-      tap((row) => console.log('[SSE backlog row]', row)),
       map((row) => ({
         type: 'expense.pending',
         data: this.toPendingEvent(row),
