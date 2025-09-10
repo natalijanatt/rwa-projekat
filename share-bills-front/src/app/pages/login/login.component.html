@@ -30,7 +30,6 @@
                 [form]="form" 
                 [submitLabel]="loading ? 'Signing in...' : 'Sign In'" 
                 [loading]="loading"
-                [cancelLabel]="'Reset'" 
                 (formSubmit)="onSubmit($event)">
         
         <app-input-field 
@@ -69,7 +68,6 @@
           Don't have an account? 
           <a routerLink="/register" class="link-button">Create one here</a>
         </p>
-        <a routerLink="/forgot-password" class="forgot-password">Forgot your password?</a>
       </div>
     </div>
 
