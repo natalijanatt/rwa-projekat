@@ -5,8 +5,10 @@ import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { selectUser } from '../../../core/auth/state/auth.selectors';
+import { AuthActions } from '../../../core/auth/state/auth.actions';
 import { UserDto } from '../../../feature/users/data/user.dto';
 import { UserUpdateComponent } from '../user-update/user-update.component';
+import { LogoutConfirmationDialogComponent } from '../../../shared/components/logout-confirmation-dialog/logout-confirmation-dialog.component';
 
 @Component({
   selector: 'app-profile',
@@ -52,7 +54,26 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     ref.afterClosed().subscribe((result) => {
       if (result === 'updated') {
-        window.location.reload();
+        this.store.dispatch(AuthActions.loadUser());
+      }
+    });
+  }
+
+  onLogout() {
+    const ref = this.dialog.open(LogoutConfirmationDialogComponent, {
+      disableClose: false,
+      width: '420px',
+      maxWidth: '90vw',
+      panelClass: 'logout-dialog-panel',
+      backdropClass: 'app-modal-backdrop',
+      hasBackdrop: true,
+      autoFocus: true,
+      restoreFocus: true
+    });
+
+    ref.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
+        this.store.dispatch(AuthActions.logout());
       }
     });
   }

@@ -1,34 +1,32 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environment/environment';
 import { LoginDto } from './data/login.dto';
 import { TokensDto } from './data/tokens.dto';
 import { UserDto } from '../../feature/users/data/user.dto';
-import { catchError, tap, throwError } from 'rxjs';
+import { catchError } from 'rxjs';
 import { UserCreateDto } from '../../feature/users/data/user-create.dto';
+import { ErrorService } from '../services/error.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private http = inject(HttpClient);
+  private errorService = inject(ErrorService);
   private base = environment.apiUrl;
   
   login(dto: LoginDto) {
-  return this.http.post<TokensDto>(`${this.base}/auth/login`, dto).pipe(
-    tap({
-      next: ((res) => console.log('Login HTTP response:', res)),
-      error: (err) => console.warn('Login HTTP error:', err),
-    })
-  );
-}
+    return this.http.post<TokensDto>(`${this.base}/auth/login`, dto).pipe(
+      catchError((err) => this.errorService.handleHttpError(err))
+    );
+  }
 
-  me() { return this.http.get<UserDto>(`${this.base}/users/profile`).pipe(
-    tap({
-      next: (res) => console.log('Me HTTP response:', res),
-      error: (err) => console.warn('Me HTTP error:', err),
-    }),
-  ); }
+  me() {
+    return this.http.get<UserDto>(`${this.base}/users/profile`).pipe(
+      catchError((err) => this.errorService.handleHttpError(err))
+    );
+  }
 
   register(dto: UserCreateDto, image?: File) {
     const url = `${this.base}/auth/register`;
@@ -38,12 +36,7 @@ export class AuthService {
       : this.http.post<UserDto>(url, dto);
 
     return request$.pipe(
-      catchError((err: HttpErrorResponse) => {
-        const msg =
-          (Array.isArray(err.error?.message) ? err.error.message.join(', ') : err.error?.message) ||
-          err.message || 'Registration failed';
-        return throwError(() => ({ ...err, friendlyMessage: msg }));
-      })
+      catchError((err) => this.errorService.handleHttpError(err))
     );
   }
 

@@ -27,8 +27,6 @@ export class NavBarComponent {
   toggle() { this.menuOpen.update(v => !v); }
   close()  { this.menuOpen.set(false); }
 
-  logout() { this.authState.forceLogout(); }
-
   /**
    * Handles navigation clicks - scrolls to top if clicking current route
    */

@@ -1,5 +1,4 @@
 import { Injectable, signal } from '@angular/core';
-import { UserDto } from '../../feature/users/data/user.dto';
 
 const ACCESS_KEY = 'sb.access';
 
@@ -12,15 +11,10 @@ export class TokenState {
   accessToken = signal<string | null>(localStorage.getItem(ACCESS_KEY));
   private logoutTimer?: any;
 
-  // private _isAuthenticated = signal<boolean>(false);
-  // readonly isAuthenticated = this._isAuthenticated.asReadonly();
-
   setToken(token: string) {
     this.accessToken.set(token);
     localStorage.setItem(ACCESS_KEY, token);
-    // this._isAuthenticated.set(true);
     this.scheduleAutoLogout(token);
-    
   }
 
   clear() {
@@ -48,7 +42,6 @@ export class TokenState {
 
   forceLogout() {
     this.clear();
-    // this._isAuthenticated.set(false);
     location.assign('/login?expired=1');
   }
 }

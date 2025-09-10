@@ -1,0 +1,217 @@
+.expense-finalized-dialog {
+  background: #1a1a1a;
+  color: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  min-width: 450px;
+  max-width: 550px;
+}
+
+.dialog-header {
+  padding: 24px;
+  text-align: center;
+  position: relative;
+}
+
+.dialog-header.accepted {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.dialog-header.rejected {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.status-icon {
+  margin-bottom: 16px;
+}
+
+.status-icon mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: #ffffff;
+}
+
+.dialog-title {
+  color: #ffffff;
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.dialog-content {
+  padding: 24px;
+  background: #1a1a1a;
+}
+
+.finalized-card {
+  background: #2d2d2d;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #404040;
+}
+
+.expense-info {
+  text-align: center;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #404040;
+}
+
+.expense-title {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+}
+
+.expense-amount {
+  color: #10b981;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.status-message {
+  text-align: center;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #2a1a1a;
+  border-radius: 8px;
+  border: 1px solid #ef4444;
+}
+
+.rejection-message {
+  color: #ef4444;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.acceptance-details {
+  margin-bottom: 24px;
+}
+
+.acceptance-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 12px;
+  background: #1a1a1a;
+  border-radius: 8px;
+  border: 1px solid #10b981;
+}
+
+.count-icon {
+  color: #10b981;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.count-text {
+  color: #10b981;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.money-share {
+  background: #1a1a1a;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #404040;
+}
+
+.share-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #2d2d2d;
+}
+
+.share-item:last-child {
+  border-bottom: none;
+}
+
+.share-label {
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.share-value {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.group-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.detail-icon {
+  color: #6b7280;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.detail-label {
+  color: #9ca3af;
+  font-weight: 500;
+  min-width: 60px;
+}
+
+.detail-value {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.dialog-actions {
+  padding: 16px 24px 24px 24px;
+  background: #1a1a1a;
+  margin: 0;
+}
+
+.ok-button {
+  font-weight: 600;
+  padding: 12px 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+}
+
+.ok-button[color="primary"] {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+}
+
+.ok-button[color="primary"]:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+}
+
+.ok-button[color="warn"] {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #ffffff;
+}
+
+.ok-button[color="warn"]:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.ok-button mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}

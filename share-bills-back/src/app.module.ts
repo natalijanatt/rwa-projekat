@@ -8,7 +8,6 @@ import { ConfigService } from '@nestjs/config';
 import { AuthModule } from './modules/auth-module/auth.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { GroupMembersModule } from './modules/group-members/group-members.module';
-import { ExpenseParticipantsController } from './modules/expense-participants/expense-participants.controller';
 import { ExpenseParticipantsModule } from './modules/expense-participants/expense-participants.module';
 import { GroupsModule } from './modules/groups/groups.module';
 import { GroupMembersBalanceModule } from './modules/group-members-balance/group-members-balance.module';
@@ -16,6 +15,7 @@ import { ExpensesModule } from './modules/expenses/expenses.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { StorageService } from './modules/storage/storage.service';
 import { RealtimeModule } from './realtime/realtime.module';
+import { SwaggerModule } from './swagger/swagger.module';
 
 @Module({
   imports: [
@@ -43,9 +43,10 @@ import { RealtimeModule } from './realtime/realtime.module';
     GroupsModule,
     GroupMembersBalanceModule,
     ExpensesModule,
-    RealtimeModule
+    RealtimeModule,
+    SwaggerModule
   ],
-  controllers: [AppController, ExpenseParticipantsController],
+  controllers: [AppController],
   providers: [AppService, {provide: 'APP_GUARD', useClass: ThrottlerGuard}, StorageService],
 })
 export class AppModule {}

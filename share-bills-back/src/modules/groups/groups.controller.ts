@@ -10,7 +10,6 @@ import {
   ParseFilePipe,
   Patch,
   Post,
-  Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -18,7 +17,7 @@ import {
 } from '@nestjs/common';
 import { GroupsService } from './groups.service';
 import { BaseGroupDto } from './dto/base-group.dto';
-import { AuthGuard } from '@nestjs/passport';
+import { FullGroupDto } from './dto/full-group.dto';
 import { Group } from './group.entity';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { GroupMember } from '../group-members/group-members.entity';
@@ -28,6 +27,9 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { StorageService } from '../storage/storage.service';
 import { UpdateGroupDto } from './dto/update-group.dto';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { PAGINATION } from '../../common/constants/pagination.constants';
 
 @Controller('groups')
 export class GroupsController {
@@ -37,83 +39,75 @@ export class GroupsController {
     private readonly storage: StorageService,
   ) {}
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @Get()
-  async findAll(
-    @Req() req: Request & { user: { userId: number } },
-  ): Promise<BaseGroupDto[]> {
-    const userId = req.user?.userId;
-    if (!userId || isNaN(Number(userId))) {
-      throw new BadRequestException(
-        'You have to be logged in to access this resource',
-      );
-    }
+  async findAll(@CurrentUser() userId: number): Promise<BaseGroupDto[]> {
     const groups = await this.groupsService.findAll(userId);
 
-    groups.map((group) => {
-      group.imagePath = group.imagePath
+    return groups.map((group) => ({
+      ...group,
+      imagePath: group.imagePath
         ? this.storage.getPublicUrl(group.imagePath)
-        : undefined;
-    });
-
-    return groups;
+        : undefined,
+    }));
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   async findOne(
-    @Req() req: Request & { user: { userId: number } },
+    @CurrentUser() userId: number,
     @Param('id') id: string,
-  ): Promise<BaseGroupDto | null> {
-    const userId = req.user?.userId;
-    if (!userId || isNaN(Number(userId))) {
-      throw new BadRequestException(
-        'You have to be logged in to access this resource',
-      );
-    }
+  ): Promise<FullGroupDto> {
     const validated = await this.groupsService.checkMembership(userId, +id);
-    if (!validated)
+    if (!validated) {
       throw new ForbiddenException('You do not have access to this resource');
+    }
+    
     const group = await this.groupsService.findOne(+id, userId);
 
-    return group
-      ? {
-          ...group,
-          imagePath: group.imagePath
-            ? this.storage.getPublicUrl(group.imagePath)
-            : undefined,
+    // Process group image
+    if (group.imagePath) {
+      group.imagePath = this.storage.getPublicUrl(group.imagePath);
+    }
+
+    // Process member images
+    if (group.members) {
+      group.members = group.members.map(member => ({
+        ...member,
+        user: {
+          ...member.user,
+          imagePath: member.user.imagePath 
+            ? this.storage.getPublicUrl(member.user.imagePath)
+            : undefined
         }
-      : null;
+      }));
+    }
+
+    return group;
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('image', {
       storage: memoryStorage(),
-      limits: { fileSize: 5 * 1024 * 1024 },
+      limits: { fileSize: PAGINATION.MAX_LIMIT * 1024 * 1024 },
     }),
   )
   @Post()
   async create(
-    @Req() req: Request & { user: { userId: number } },
+    @CurrentUser() userId: number,
     @Body(ValidationPipe) group: CreateGroupDto,
     @UploadedFile(
       new ParseFilePipe({
         fileIsRequired: false,
         validators: [
-          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
+          new MaxFileSizeValidator({ maxSize: PAGINATION.MAX_LIMIT * 1024 * 1024 }),
           new FileTypeValidator({ fileType: /(jpg|jpeg|png|webp)$/ }),
         ],
       }),
     )
     image?: Express.Multer.File,
   ): Promise<Group> {
-    const userId = req.user?.userId;
-    if (!userId || isNaN(Number(userId))) {
-      throw new BadRequestException(
-        'You have to be logged in to create a group',
-      );
-    }
     const created = await this.groupsService.create(group, userId);
 
     if (image) {
@@ -123,46 +117,38 @@ export class GroupsController {
     return created;
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @Post(':id/members')
   async getMembers(
-    @Req() req: Request & { user: { userId: number } },
+    @CurrentUser() userId: number,
     @Param('id') id: string,
   ): Promise<BaseGroupMemberDto[]> {
-    const userId = req.user?.userId;
-    if (!userId || isNaN(Number(userId))) {
-      throw new BadRequestException(
-        'You have to be logged in to access this resource',
-      );
-    }
     const validated = await this.groupsService.checkMembership(userId, +id);
-    if (!validated)
+    if (!validated) {
       throw new ForbiddenException(
         'You have to be a member of the group to see its members',
       );
-    const members = await this.groupMembersService.getMembers(+id);
-    return members;
+    }
+    return this.groupMembersService.getMembers(+id);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @Post(':group_id/new-member/:member_id')
   async addMember(
-    @Req() req: Request & { user: { userId: number } },
+    @CurrentUser() userId: number,
     @Param('group_id') groupId: string,
     @Param('member_id') memberId: string,
   ): Promise<GroupMember> {
-    if (isNaN(+groupId) || isNaN(+memberId) || !req.user.userId) {
+    if (isNaN(+groupId) || isNaN(+memberId)) {
       throw new BadRequestException('Invalid group or member ID');
     }
 
-    const validated = await this.groupsService.checkMembership(
-      req.user.userId,
-      +groupId,
-    );
-    if (!validated)
+    const validated = await this.groupsService.checkMembership(userId, +groupId);
+    if (!validated) {
       throw new ForbiddenException(
         'You do not have permission to add members to this group',
       );
+    }
 
     const memberExists = await this.groupsService.checkMembership(
       +memberId,
@@ -178,72 +164,51 @@ export class GroupsController {
     return this.groupsService.addMemberToGroup(+groupId, +memberId);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @Get(':id/members')
   async getGroupMembers(
-    @Req() req: Request & { user: { userId: number } },
+    @CurrentUser() userId: number,
     @Param('id') id: string,
   ): Promise<BaseGroupMemberDto[]> {
-    const userId = req.user?.userId;
-    if (!userId || isNaN(Number(userId))) {
-      throw new BadRequestException(
-        'You have to be logged in to access this resource',
-      );
-    }
     const validated = await this.groupsService.checkMembership(userId, +id);
-    if (!validated)
+    if (!validated) {
       throw new ForbiddenException('You do not have access to this resource');
+    }
     return this.groupMembersService.getMembers(+id);
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body(ValidationPipe) group: UpdateGroupDto): Promise<Group | null> {
-  //     return this.groupsService.update(+id, group);
-  // }
-
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('image', {
       storage: memoryStorage(),
-      limits: { fileSize: 5 * 1024 * 1024 },
+      limits: { fileSize: PAGINATION.MAX_LIMIT * 1024 * 1024 },
     }),
   )
   @Patch(':id')
   async update(
-    @Req() req: Request & { user: { userId: number } },
+    @CurrentUser() userId: number,
     @Param('id') id: string,
     @Body(ValidationPipe) group: UpdateGroupDto,
     @UploadedFile(
       new ParseFilePipe({
         fileIsRequired: false,
         validators: [
-          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
+          new MaxFileSizeValidator({ maxSize: PAGINATION.MAX_LIMIT * 1024 * 1024 }),
           new FileTypeValidator({ fileType: /(jpg|jpeg|png|webp)$/ }),
         ],
       }),
     )
     image?: Express.Multer.File,
-  ): Promise<BaseGroupDto | null> {
-    const userId = req.user?.userId;
-    if (!userId || isNaN(Number(userId))) {
-      throw new BadRequestException(
-        'You have to be logged in to create a group',
-      );
-    }
-
+  ): Promise<BaseGroupDto> {
     const validated = await this.groupsService.checkMembership(userId, +id);
-    if (!validated)
+    if (!validated) {
       throw new ForbiddenException(
         'You do not have permission to update this group',
       );
+    }
 
     const updated = await this.groupsService.update(+id, group);
 
-    if (!updated) {
-      throw new BadRequestException(
-        'Group not found or you do not have permission to update it',
-      );
-    }
     if (image) {
       const { path } = await this.storage.uploadGroupCover(updated.id, image);
       await this.groupsService.updateCover(updated.id, path);

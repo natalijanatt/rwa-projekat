@@ -3,6 +3,9 @@
   background: #1a1a1a;
   min-height: 100vh;
   color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 /* Page Header */
@@ -48,8 +51,11 @@
 /* Expenses List */
 .expenses-list {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   gap: 1rem;
+  align-items: center;
+  justify-content: center;
 }
 
 .expense-item {
@@ -61,6 +67,8 @@
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  max-width: 1000px;
+  min-width: 350px;
   
   &::before {
     content: '';
@@ -413,11 +421,13 @@
   }
   
   .filters-section {
-    padding: 1rem;
+    padding: 0.5rem;
+    margin: 5%;
   }
   
   .expense-item {
     padding: 1rem;
+    min-width: 90%;
   }
 }
 

@@ -5,6 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { FullUserDto } from '../users/dto/full-user.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -21,17 +22,17 @@ export class AuthService {
       return null;
     }
 
-    const user = await this.usersService.findByEmail(email);
+    const user = await this.usersService.findByEmailAuth(email);
 
-    if (!user || !user.password) {
+    if (!user || !user.passwordHash) {
       throw new BadRequestException('Invalid credentials');
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
     if (isPasswordValid) {
-      const { password: _, ...result } = user;
-      return result;
+      const { ...result } = user;
+      return new FullUserDto(result);
     }
 
     throw new BadRequestException('Incorrect password');

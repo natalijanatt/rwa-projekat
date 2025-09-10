@@ -27,7 +27,6 @@
     <mat-form-field appearance="outline">
       <mat-label>Paid by</mat-label>
       <mat-select
-        [disabled]="!form.value.groupId || !members.length"
         [formControl]="form.controls.paidBy">
         <mat-option [value]="null">Anyone</mat-option>
         <mat-option *ngFor="let m of members; trackBy: membersTrackBy" [value]="m.id">

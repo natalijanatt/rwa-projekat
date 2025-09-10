@@ -12,9 +12,12 @@ import { GroupMember } from '../group-members/group-members.entity';
 import { ParticipantStatus } from '../expense-participants/expense-participants.entity';
 import { FilterExpenseDto } from './dto/filter-expense.dto';
 import { PaginatedExpenses } from './dto/paginated-expenses.dto';
+import { BaseService } from '../../common/services/base.service';
+import { ExpenseNotFoundException } from '../../common/exceptions/business.exceptions';
+import { PAGINATION, COMMON_SELECT_FIELDS, getSelectFields } from '../../common/constants/pagination.constants';
 
 @Injectable()
-export class ExpensesService {
+export class ExpensesService extends BaseService<Expense> {
   constructor(
     @InjectRepository(Expense)
     private readonly expenseRepo: Repository<Expense>,
@@ -22,37 +25,54 @@ export class ExpensesService {
     private readonly groupMembersService: GroupMembersService,
     @Inject(forwardRef(() => ExpenseFinalizerService))
     private readonly finalizer: ExpenseFinalizerService,
-  ) {}
+  ) {
+    super(expenseRepo);
+  }
 
-  async findOne(id: number): Promise<Expense | null> {
-    return this.expenseRepo.findOneBy({ id });
+  async findOne(id: number): Promise<Expense> {
+    const expense = await this.expenseRepo.createQueryBuilder('expense')
+      .leftJoinAndSelect('expense.group', 'group')
+      .leftJoinAndSelect('expense.paidBy', 'paidBy')
+      .leftJoinAndSelect('paidBy.user', 'paidByUser')
+      .leftJoinAndSelect('expense.paidTo', 'paidTo')
+      .leftJoinAndSelect('paidTo.user', 'paidToUser')
+      .addSelect(getSelectFields('group', COMMON_SELECT_FIELDS.GROUP))
+      .where('expense.id = :id', { id })
+      .getOne();
+    
+    if (!expense) {
+      throw new ExpenseNotFoundException(id);
+    }
+    
+    return expense;
   }
 
   async getExpensesForGroup(
     groupId: number,
     page: number = 1,
   ): Promise<BaseExpenseDto[]> {
-    const expenses = await this.expenseRepo
-      .createQueryBuilder('expense')
+    const qb = this.createBaseQueryBuilder('expense')
       .leftJoinAndSelect('expense.group', 'group')
       .leftJoinAndSelect('expense.paidBy', 'paidBy')
-      .where('expense.groupId = :groupId', { groupId })
-      .orderBy('expense.createdAt', 'DESC')
-      .skip((page - 1) * 5)
-      .take(5)
-      .getMany();
+      .where('expense.groupId = :groupId', { groupId });
+    
+    this.applyPagination(qb, { 
+      page, 
+      limit: PAGINATION.USER_SEARCH_LIMIT, 
+      orderBy: 'createdAt', 
+      orderDirection: 'DESC' 
+    });
 
+    const expenses = await qb.getMany();
     return expenses.map((expense) => new BaseExpenseDto(expense));
   }
   async getExpenses(
     filter: FilterExpenseDto,
     userId: number,
   ): Promise<PaginatedExpenses> {
-    const PAGE_SIZE = 20;
     const page = Math.max(filter.page ?? 1, 1);
 
-    const qb = this.expenseRepo
-      .createQueryBuilder('expense')
+    const qb = this.createBaseQueryBuilder('expense')
       .leftJoinAndSelect('expense.group', 'group')
       .leftJoinAndSelect('expense.paidBy', 'paidBy')
       .leftJoinAndSelect('paidBy.user', 'paidByUser')
@@ -63,12 +83,11 @@ export class ExpensesService {
       .leftJoinAndSelect('participantMember.user', 'participantUser')
       .distinct(true);
 
-    if (filter.groupId)
+    if (filter.groupId) {
       qb.andWhere('expense.groupId = :groupId', { groupId: filter.groupId });
+    }
     if (userId) {
-      qb.andWhere('participantUser.id = :userId', {
-        userId: userId,
-      });
+      qb.andWhere('participantUser.id = :userId', { userId });
     }
     if (filter.type) {
       qb.andWhere('expense.txnType = :type', { type: filter.type });
@@ -76,35 +95,30 @@ export class ExpensesService {
     if (filter.status) {
       qb.andWhere('participants.status = :status', { status: filter.status });
     }
-
     if (filter.paidBy) {
-      console.log('filter.paidBy', filter.paidBy);
       qb.andWhere('expense.paidBy = :paidBy', { paidBy: filter.paidBy });
     }
 
-    if (filter.ordredBy) {
-      qb.orderBy(`expense.${filter.ordredBy}`, filter.orderDirection ?? 'DESC');
-    } else {
-      qb.orderBy('expense.createdAt', 'DESC');
-    }
-
-    qb.skip((page - 1) * PAGE_SIZE).take(PAGE_SIZE);
+    this.applyPagination(qb, {
+      page,
+      limit: PAGINATION.EXPENSE_PAGE_SIZE,
+      orderBy: filter.ordredBy || 'createdAt',
+      orderDirection: filter.orderDirection || 'DESC'
+    });
 
     const [entities, totalItems] = await qb.getManyAndCount();
-
-    const pageSize = PAGE_SIZE;
-    const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize);
+    const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / PAGINATION.EXPENSE_PAGE_SIZE);
 
     return {
       items: entities.map((e) => new BaseExpenseDto(e)),
       page,
-      pageSize,
+      pageSize: PAGINATION.EXPENSE_PAGE_SIZE,
       totalItems,
       totalPages,
     };
   }
 
-  async getExpense(expenseId: number): Promise<FullExpenseDto | null> {
+  async getExpense(expenseId: number): Promise<FullExpenseDto> {
     const expense = await this.expenseRepo
       .createQueryBuilder('expense')
       .leftJoinAndSelect('expense.group', 'group')
@@ -122,11 +136,16 @@ export class ExpensesService {
       )
       .leftJoinAndSelect('participants.member', 'participantMember')
       .leftJoinAndSelect('participantMember.user', 'participantUser')
+      .addSelect(getSelectFields('paidByUser', COMMON_SELECT_FIELDS.USER))
+      .addSelect(getSelectFields('paidToUser', COMMON_SELECT_FIELDS.USER))
+      .addSelect(getSelectFields('participantUser', COMMON_SELECT_FIELDS.USER))
 
       .where('expense.id = :expenseId', { expenseId })
       .getOne();
 
-    if (!expense) return null;
+    if (!expense) {
+      throw new ExpenseNotFoundException(expenseId);
+    }
 
     const acceptedMembers: GroupMember[] = (expense.participants ?? [])
       .map((p) => p.member)
@@ -150,7 +169,7 @@ export class ExpensesService {
       paidToId: data.paidToId ?? null,
       title: data.title,
       amount: Number(data.amount),
-      dateIncurred: data.dateIncurred, // 'YYYY-MM-DD'
+      dateIncurred: data.dateIncurred,
       txnType: data.txnType === 'expense' ? TxnType.EXPENSE : TxnType.TRANSFER,
     });
 
@@ -164,6 +183,7 @@ export class ExpensesService {
         entity.groupId,
       );
       const expense = await this.expenseRepo.save(entity);
+
       return expense;
     }
     const expense = await this.expenseRepo.save(entity);

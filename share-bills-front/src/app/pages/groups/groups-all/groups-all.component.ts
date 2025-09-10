@@ -28,7 +28,8 @@ export class GroupsAllComponent {
   ngOnInit() {
     this.groupsService.getAllGroups().subscribe({
       next: (gs) => this.groups.set(gs),
-      error: (err) => console.error('Failed to load groups', err)
+      error: (err) => {
+      }
     });
 
     this.route.paramMap.pipe(

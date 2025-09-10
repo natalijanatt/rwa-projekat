@@ -1,0 +1,44 @@
+<div class="transfer-notification-dialog">
+  <div class="dialog-header">
+    <div class="success-icon">
+      <mat-icon>account_balance_wallet</mat-icon>
+    </div>
+    <h2 mat-dialog-title class="dialog-title">Money Received!</h2>
+  </div>
+  
+  <mat-dialog-content class="dialog-content">
+    <div class="transfer-card">
+      <div class="transfer-message">
+        <p class="main-message">You received money from</p>
+        <p class="sender-name">{{data.event.transferFrom}}</p>
+      </div>
+      
+      <div class="transfer-amount">
+        <span class="amount-value">{{formatCurrency(data.event.amount)}}</span>
+      </div>
+      
+      <div class="transfer-details">
+        <div class="detail-item">
+          <mat-icon class="detail-icon">group</mat-icon>
+          <span class="detail-label">Group:</span>
+          <span class="detail-value">{{data.event.groupName}}</span>
+        </div>
+        <div class="detail-item">
+          <mat-icon class="detail-icon">description</mat-icon>
+          <span class="detail-label">Description:</span>
+          <span class="detail-value">{{data.event.expense.title}}</span>
+        </div>
+      </div>
+    </div>
+  </mat-dialog-content>
+  
+  <mat-dialog-actions align="center" class="dialog-actions">
+    <button mat-raised-button 
+            color="primary" 
+            class="ok-button" 
+            (click)="onOk()">
+      <mat-icon>check</mat-icon>
+      <span>Got it!</span>
+    </button>
+  </mat-dialog-actions>
+</div>

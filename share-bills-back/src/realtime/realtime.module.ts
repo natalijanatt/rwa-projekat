@@ -1,9 +1,13 @@
-import { Global, Module } from '@nestjs/common';
-import { PendingExpenseBus } from './pending-expense.bus';
+import { forwardRef, Global, Module } from '@nestjs/common';
+import { UserEventBus } from './user-event.bus';
+import { RealtimeController } from './realtime.controller';
+import { ExpenseParticipantsModule } from 'src/modules/expense-participants/expense-participants.module';
 
 @Global()
 @Module({
-  providers: [PendingExpenseBus],
-  exports: [PendingExpenseBus],
+  imports: [forwardRef(() => ExpenseParticipantsModule)],
+  providers: [UserEventBus],
+  controllers: [RealtimeController],
+  exports: [UserEventBus],
 })
 export class RealtimeModule {}

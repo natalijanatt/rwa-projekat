@@ -15,9 +15,9 @@ export class UserCreateDto{
     })
     passwordHash: string;
 
-    constructor(entity: UserDto) {
+    constructor(entity: UserDto, password: string) {
         this.name = entity.name;
         this.email = entity.email;
-        this.passwordHash = entity.password;
+        this.passwordHash = password;
     }
 }

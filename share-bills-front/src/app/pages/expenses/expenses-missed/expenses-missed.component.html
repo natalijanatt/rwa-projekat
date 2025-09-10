@@ -39,8 +39,8 @@
               </div>
             </div>
             <div class="expense-amount">
-              <span class="amount-value">{{ expense.amount | currency:'RSD':'symbol':'1.0-0' }}</span>
-              <span class="currency-code">RSD</span>
+              <span class="amount-value">{{ expense.amount | currency:expense.group.baseCurrencyCode:'symbol':'1.0-0' }}</span>
+              <span class="currency-code">{{ expense.group.baseCurrencyCode }}</span>
             </div>
           </div>
 

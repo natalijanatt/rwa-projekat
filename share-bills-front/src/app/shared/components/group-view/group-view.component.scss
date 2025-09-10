@@ -26,6 +26,7 @@
     height: auto;
     object-fit: cover;
     display: block;
+    aspect-ratio: 16/9;
   }
   
   .image-overlay {
@@ -228,7 +229,14 @@
       height: 48px;
       border-radius: 50%;
       object-fit: cover;
+      aspect-ratio: 1;
       border: 2px solid #404040;
+      background: #2d2d2d;
+      
+      // Force square aspect ratio for all images
+      &[src*="avatar-placeholder"] {
+        background: linear-gradient(135deg, #404040 0%, #2d2d2d 100%);
+      }
     }
     
     .member-status {
@@ -619,6 +627,7 @@
     .member-avatar img {
       width: 40px;
       height: 40px;
+      aspect-ratio: 1;
     }
   }
   

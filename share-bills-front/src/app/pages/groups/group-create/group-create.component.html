@@ -5,8 +5,21 @@
         <app-form #f="appForm" [form]="form" [submitLabel]="loading ? 'Creating…' : 'Create'" [loading]="loading"
             [cancelLabel]="'Reset'" (formSubmit)="onSubmit($event)">
             <app-input-field label="Name" type="text" [required]="true" [submitted]="f.submitted"
-                [placeholder]="'Enter your name'" [value]="form.controls.name.value"
+                [placeholder]="'Enter group name'" [value]="form.controls.name.value"
                 (valueChange)="onInputString('name', $event)"></app-input-field>
+
+            <div class="currency-field">
+                <label class="currency-label">Currency *</label>
+                <select class="currency-select" 
+                        [value]="form.controls.baseCurrencyCode.value"
+                        (change)="onCurrencyChange($any($event.target).value)"
+                        [class.error]="f.submitted && form.controls.baseCurrencyCode.invalid">
+                    <option *ngFor="let currency of currencyOptions" [value]="currency.code">
+                        {{ currency.name }}
+                    </option>
+                </select>
+                <small class="currency-hint">Select the primary currency for this group</small>
+            </div>
 
             <app-image-uploader [emitOnSelect]="true" [disabled]="loading" accept="image/png,image/jpeg,image/webp"
                 label="Avatar" (fileChange)="onCoverSelected($event)" (error)="onCoverError($event)">

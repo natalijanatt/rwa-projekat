@@ -15,6 +15,8 @@ import { GroupsModule } from '../groups/groups.module';
 import { GroupMembersModule } from '../group-members/group-members.module';
 import { UsersModule } from '../users/users.module';
 import { GroupMembersBalanceModule } from '../group-members-balance/group-members-balance.module';
+import { StorageModule } from '../storage/storage.module';
+import { UserValidationService } from '../../common/services/user-validation.service';
 
 @Module({
   imports: [
@@ -29,13 +31,15 @@ import { GroupMembersBalanceModule } from '../group-members-balance/group-member
     forwardRef(() => ExpenseParticipantsModule),
     GroupsModule,
     GroupMembersModule,
-    UsersModule,
+    forwardRef(() => UsersModule),
     GroupMembersBalanceModule,
+    StorageModule,
   ],
   controllers: [ExpensesController],
   providers: [
     ExpensesService,
     ExpenseFinalizerService,
+    UserValidationService,
   ],
   exports: [
     ExpensesService,

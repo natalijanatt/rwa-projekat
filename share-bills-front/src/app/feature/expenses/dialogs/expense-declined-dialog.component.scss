@@ -1,0 +1,138 @@
+.expense-declined-dialog {
+  background: #1a1a1a;
+  color: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  min-width: 400px;
+  max-width: 500px;
+}
+
+.dialog-header {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  padding: 24px;
+  text-align: center;
+  position: relative;
+}
+
+.decline-icon {
+  margin-bottom: 16px;
+}
+
+.decline-icon mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: #ffffff;
+}
+
+.dialog-title {
+  color: #ffffff;
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.dialog-content {
+  padding: 24px;
+  background: #1a1a1a;
+}
+
+.response-card {
+  background: #2d2d2d;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #404040;
+}
+
+.response-message {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.main-message {
+  color: #ef4444;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.expense-title {
+  color: #d1d5db;
+  font-size: 16px;
+  margin: 0;
+  font-style: italic;
+}
+
+.expense-amount {
+  text-align: center;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #1a1a1a;
+  border-radius: 8px;
+  border: 2px solid #ef4444;
+}
+
+.amount-value {
+  color: #ef4444;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.response-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.detail-icon {
+  color: #6b7280;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.detail-label {
+  color: #9ca3af;
+  font-weight: 500;
+  min-width: 100px;
+}
+
+.detail-value {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.dialog-actions {
+  padding: 16px 24px 24px 24px;
+  background: #1a1a1a;
+  margin: 0;
+}
+
+.ok-button {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #ffffff;
+  font-weight: 600;
+  padding: 12px 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+}
+
+.ok-button:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.ok-button mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}

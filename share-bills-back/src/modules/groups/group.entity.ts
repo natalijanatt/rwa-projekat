@@ -26,6 +26,9 @@ export class Group {
 
   @Column({name: 'image_path', nullable: true})
   imagePath: string;
+
+  @Column({name: 'base_currency_code', length: 3})
+  baseCurrencyCode: string;
   
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz', default: () => 'NOW()' })
   createdAt: Date;

@@ -51,7 +51,9 @@ export class GroupViewComponent {
       )
       .subscribe({
         next: (g) => this.group.set(g),
-        error: (err) => console.error('Failed to load group', err),
+        error: (err) => {
+          // Error handling is done by ErrorService
+        },
       });
   }
 
@@ -128,7 +130,9 @@ export class GroupViewComponent {
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: (v) => this.group.set(v),
-        error: (err) => console.error('Failed to refresh group', err),
+        error: (err) => {
+          // Error handling is done by ErrorService
+        },
       });
   }
 
@@ -142,8 +146,26 @@ export class GroupViewComponent {
     if (Number(balance.balance) === 0)
       return { status: 'Settled', owed: false };
 
+    const currencyCode = g.baseCurrencyCode || 'USD';
+    const formattedAmount = this.formatCurrency(Math.abs(balance.balance), currencyCode);
+
     if (balance.balance < 0)
-      return { status: `ows $${Math.abs(balance.balance)}`, owed: false };
-    return { status: 'owed $' + balance.balance, owed: true };
+      return { status: `ows ${formattedAmount}`, owed: false };
+    return { status: `owed ${formattedAmount}`, owed: true };
+  }
+
+  private formatCurrency(amount: number, currencyCode: string): string {
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: currencyCode,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(amount);
+    } catch (error) {
+      // Currency formatting error - fallback to original value
+      // Fallback to simple formatting
+      return `${currencyCode} ${amount.toFixed(2)}`;
+    }
   }
 }

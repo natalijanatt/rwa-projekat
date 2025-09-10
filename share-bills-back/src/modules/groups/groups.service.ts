@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Group } from './group.entity';
 import { Repository } from 'typeorm';
@@ -10,19 +10,26 @@ import { UsersService } from '../users/users.service';
 import { BaseUserDto } from '../users/dto/base-user.dto';
 import { FullGroupDto } from './dto/full-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
+import { BaseService } from '../../common/services/base.service';
+import { GroupNotFoundException, UserNotFoundException } from '../../common/exceptions/business.exceptions';
+import { COMMON_SELECT_FIELDS, getSelectFields } from '../../common/constants/pagination.constants';
 
 @Injectable()
-export class GroupsService {
+export class GroupsService extends BaseService<Group> {
   constructor(
     @InjectRepository(Group)
     private readonly repo: Repository<Group>,
     private readonly groupMembersService: GroupMembersService,
+    @Inject(forwardRef(() => UsersService))
     private readonly userService: UsersService,
-  ) {}
+  ) {
+    super(repo);
+  }
 
   async findAll(memberId: number): Promise<BaseGroupDto[]> {
     const groups = await this.repo
       .createQueryBuilder('group')
+      .select(getSelectFields('group', COMMON_SELECT_FIELDS.GROUP))
       .innerJoinAndSelect('group.members', 'members')
       .where('members.user_id = :memberId', { memberId })
       .getMany();
@@ -31,9 +38,11 @@ export class GroupsService {
   async findOne(
     groupId: number,
     userId?: number,
-  ): Promise<FullGroupDto | null> {
+  ): Promise<FullGroupDto> {
     let group = await this.repo
       .createQueryBuilder('group')
+      .select(getSelectFields('group', COMMON_SELECT_FIELDS.GROUP))
+      .addSelect(getSelectFields('memberUser', COMMON_SELECT_FIELDS.USER))
       .leftJoinAndSelect('group.members', 'members')
       .leftJoinAndSelect('members.user', 'memberUser')
       .where('group.id = :groupId', { groupId })
@@ -42,6 +51,8 @@ export class GroupsService {
     if (userId) {
       group = await this.repo
         .createQueryBuilder('group')
+        .select(getSelectFields('group', COMMON_SELECT_FIELDS.GROUP))
+        .addSelect(getSelectFields('memberUser', COMMON_SELECT_FIELDS.USER))
         .leftJoinAndSelect('group.members', 'members')
         .leftJoinAndSelect('members.user', 'memberUser')
         .leftJoinAndSelect(
@@ -54,11 +65,11 @@ export class GroupsService {
         .getOne();
     }
 
-    if (!group) return null;
+    if (!group) {
+      throw new GroupNotFoundException(groupId);
+    }
 
     const owner = await this.userService.findOne(group.ownerId);
-    if (!owner) return null;
-
     const secure = new FullGroupDto(group);
     secure.owner = new BaseUserDto(owner);
     return secure;
@@ -99,23 +110,31 @@ export class GroupsService {
       where: { id: groupId },
       relations: ['members'],
     });
-    if (!group) throw new Error('Group not found');
+    if (!group) {
+      throw new GroupNotFoundException(groupId);
+    }
 
     const user = await this.userService.findOne(userId);
-    if (!user) throw new Error('User not found');
-
     return this.groupMembersService.addMemberToGroup(groupId, userId);
   }
 
-  async updateCover(id: number, avatarPath: string) {
-    return await this.repo.update({ id }, { imagePath: avatarPath });
+  async updateCover(id: number, avatarPath: string): Promise<void> {
+    const group = await this.repo.findOneBy({ id });
+    if (!group) {
+      throw new GroupNotFoundException(id);
+    }
+    await this.repo.update({ id }, { imagePath: avatarPath });
   }
 
-  async update(id: number, data: UpdateGroupDto): Promise<BaseGroupDto | null> {
-    const group = await this.findOne(id);
-    if (!group) return null;
+  async update(id: number, data: UpdateGroupDto): Promise<BaseGroupDto> {
+    const group = await this.repo.findOneBy({ id });
+    if (!group) {
+      throw new GroupNotFoundException(id);
+    }
+    
     Object.assign(group, data);
     const updatedGroup = await this.repo.save(group);
     return new BaseGroupDto(updatedGroup);
   }
 }
+

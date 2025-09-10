@@ -4,6 +4,8 @@
     <div class="group-image">
       <img [ngSrc]="group()?.imagePath || 'assets/group-placeholder.webp'" 
            width="320" height="180"
+           ngSrcset="320w, 640w"
+           sizes="(max-width: 768px) 100vw, 320px"
            alt="{{ group()?.name }}" 
            (error)="onImgError($event)" />
       <div class="image-overlay">
@@ -57,8 +59,11 @@
         <div class="member-avatar">
           <img [ngSrc]="m.user.imagePath || 'assets/avatar-placeholder.webp'" 
                width="48" height="48"
+               ngSrcset="48w, 96w"
+               sizes="48px"
                alt="{{ m.user.name || 'Member' }}" 
-               (error)="onMemberImgError($event)" />
+               (error)="onMemberImgError($event)"
+               style="object-fit: cover; border-radius: 50%;" />
           <div class="member-status" [class]="memberBalance(m).owed ? 'status-owed' : 'status-credit'">
             <span class="status-dot"></span>
           </div>

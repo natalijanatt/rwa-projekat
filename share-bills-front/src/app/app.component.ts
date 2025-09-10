@@ -1,11 +1,11 @@
-import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { NavBarComponent } from './layout/nav-bar/nav-bar.component';
-import { ExpenseReviewListener } from './feature/expenses/expense-new.listener';
 import { Store } from '@ngrx/store';
 import { selectAuth } from './core/auth/state/auth.selectors';
 import { distinctUntilChanged, filter, map, take } from 'rxjs';
 import { Subscription } from 'rxjs';
+import { RealtimeListener } from './feature/realtime/realtime-listener.service';
 
 @Component({
   selector: 'app-root',
@@ -16,7 +16,7 @@ import { Subscription } from 'rxjs';
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit, OnDestroy {
-  private reviewListener = inject(ExpenseReviewListener);
+  private reviewListener = inject(RealtimeListener);
   private store = inject(Store);
   private router = inject(Router);
   private routerSubscription: Subscription | undefined;

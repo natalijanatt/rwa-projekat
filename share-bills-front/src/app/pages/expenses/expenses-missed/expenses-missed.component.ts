@@ -35,7 +35,6 @@ export class ExpensesMissedComponent implements OnInit {
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error fetching missed expenses:', err);
         this.error = (err?.error?.message || err?.message || 'Failed to load expenses');
         this.loading = false;
       }
@@ -53,7 +52,6 @@ export class ExpensesMissedComponent implements OnInit {
         this.expenses = this.expenses.filter(e => e.id !== expense.id);
       },
       error: (err) => {
-        console.error('Error accepting expense:', err);
         this.error = (err?.error?.message || err?.message || 'Failed to accept expense');
       }
     });    
@@ -66,7 +64,6 @@ export class ExpensesMissedComponent implements OnInit {
         this.expenses = this.expenses.filter(e => e.id !== expense.id);
       },
       error: (err) => {
-        console.error('Error declining expense:', err);
         this.error = (err?.error?.message || err?.message || 'Failed to decline expense');
       }
     });

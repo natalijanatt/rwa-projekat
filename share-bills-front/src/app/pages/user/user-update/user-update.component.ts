@@ -65,11 +65,18 @@ export class UserUpdateComponent {
   }
 
   onAvatarError(message: string) {
-    console.warn(message);
   }
 
   onCancel() {
     this.dialogRef.close('cancel');
   }
 }
+
+
+
+
+
+
+
+
 

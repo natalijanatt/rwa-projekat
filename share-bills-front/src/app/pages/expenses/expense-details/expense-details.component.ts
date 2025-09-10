@@ -36,7 +36,7 @@ import { UserDto } from '../../../feature/users/data/user.dto';
     NgClass,
     AsyncPipe,
     DatePipe,
-    CurrencyPipe,
+
     RouterLink,
     TitleCasePipe,
     ButtonComponent,
@@ -60,7 +60,6 @@ export class ExpenseDetailsComponent {
           this.expense$.pipe(
             filter((exp): exp is FullExpenseDto => !!exp),
             tap((exp: FullExpenseDto) => {
-              console.log('Expense details:', exp);
               const isParticipant = exp.participants.some(
                 (p) => p.user.id === user.id
               );
@@ -72,7 +71,6 @@ export class ExpenseDetailsComponent {
       .subscribe();
   }
 
-  // Stream the expense directly from route params
   expense$ = this.route.paramMap.pipe(
     map((pm) => ({
       expenseId: Number(pm.get('expenseId')),
@@ -88,7 +86,6 @@ export class ExpenseDetailsComponent {
     switchMap(({ groupId, expenseId }) =>
       this.expenseService.getExpense(expenseId, groupId).pipe(
         catchError((err) => {
-          console.error('Failed to load expense', err);
           this.router.navigate(['/groups', groupId], { replaceUrl: true });
           return of(null);
         })
@@ -104,7 +101,6 @@ export class ExpenseDetailsComponent {
         switchMap((exp) =>
           this.expenseService.respondLate(exp.id, exp.group.id, status).pipe(
             catchError((err) => {
-              console.error('Failed to update expense status', err);
               return of(null);
             })
           )
@@ -116,4 +112,13 @@ export class ExpenseDetailsComponent {
   }
 
   trackByMember = (_: number, m: any) => m?.id ?? m?.user?.id ?? _;
+
+  formatCurrency(amount: number, currencyCode: string): string {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currencyCode,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(amount);
+  }
 }

@@ -1,0 +1,44 @@
+<div class="expense-accepted-dialog">
+  <div class="dialog-header">
+    <div class="success-icon">
+      <mat-icon>check_circle</mat-icon>
+    </div>
+    <h2 mat-dialog-title class="dialog-title">Expense Accepted!</h2>
+  </div>
+  
+  <mat-dialog-content class="dialog-content">
+    <div class="response-card">
+      <div class="response-message">
+        <p class="main-message">{{data.event.respondFrom}} accepted your expense</p>
+        <p class="expense-title">{{data.event.expense.title}}</p>
+      </div>
+      
+      <div class="expense-amount">
+        <span class="amount-value">{{formatCurrency(data.event.expense.amount)}}</span>
+      </div>
+      
+      <div class="response-details">
+        <div class="detail-item">
+          <mat-icon class="detail-icon">group</mat-icon>
+          <span class="detail-label">Group:</span>
+          <span class="detail-value">{{data.event.groupName}}</span>
+        </div>
+        <div class="detail-item">
+          <mat-icon class="detail-icon">person</mat-icon>
+          <span class="detail-label">Responded by:</span>
+          <span class="detail-value">{{data.event.respondFrom}}</span>
+        </div>
+      </div>
+    </div>
+  </mat-dialog-content>
+  
+  <mat-dialog-actions align="center" class="dialog-actions">
+    <button mat-raised-button 
+            color="primary" 
+            class="ok-button" 
+            (click)="onOk()">
+      <mat-icon>check</mat-icon>
+      <span>Great!</span>
+    </button>
+  </mat-dialog-actions>
+</div>

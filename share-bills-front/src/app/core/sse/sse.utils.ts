@@ -1,99 +1,128 @@
+
 import { Observable } from 'rxjs';
 
-type SseOptions = {
+export type SseNamedEvent =
+  | 'open'
+  | 'error'
+  | 'message'
+  | 'heartbeat'
+  | 'expense.pending'
+  | 'expense.responded'
+  | 'expense.transferred'
+  | 'expense.finalized';
+
+export type SseEnvelope<T = unknown> = {
+  type: SseNamedEvent | (string & {});
+  data: T;
+};
+
+export type SseOptions = {
   withCredentials?: boolean;
   heartbeatMs?: number;
   events?: string[];
-  mapNamedToType?: boolean;
 };
 
-export function sse$<T = any>(url: string, opts?: SseOptions) {
+//Create an Observable that emits `{ type, data }` envelopes from an SSE endpoint
+export function sse$<T = unknown>(url: string, opts?: SseOptions): Observable<SseEnvelope<T>> {
   const {
     withCredentials = false,
     heartbeatMs = 45000,
-    events = [], // listen to named events only if provided
-    mapNamedToType = true,
+    events = [],
   } = opts ?? {};
 
-  return new Observable<T>((subscriber) => {
+  return new Observable<SseEnvelope<T>>((subscriber) => {
     let es: EventSource | null = null;
-    let heartbeatTimer: any = null;
+    let heartbeatTimer: ReturnType<typeof setTimeout> | null = null;
     let currentCleanup: (() => void) | null = null;
+    let closed = false;
+
+    const safeParse = (raw: string) => {
+      try {
+        return raw === '' ? null : JSON.parse(raw);
+      } catch {
+        return raw;
+      }
+    };
 
     const resetHeartbeat = () => {
+      if (heartbeatMs <= 0) return;
       if (heartbeatTimer) clearTimeout(heartbeatTimer);
       heartbeatTimer = setTimeout(() => {
-        // If we didn’t hear anything for heartbeatMs, restart ES cleanly
-        try { currentCleanup?.(); } catch {}
-        start(); // fresh connection
+        try {
+          currentCleanup?.();
+        } catch {}
+        if (!closed) start();
       }, heartbeatMs);
     };
 
     const start = () => {
-      // ensure previous listeners are removed before (re)starting
-      try { currentCleanup?.(); } catch {}
+      try {
+        currentCleanup?.();
+      } catch {}
 
       es = new EventSource(url, { withCredentials });
 
-      const onMessage = (ev: MessageEvent) => {
+      const onOpen = () => {
         resetHeartbeat();
-        try {
-          const data = ev.data === '' ? null : JSON.parse(ev.data);
-          // default "message" events pass data through as before
-          subscriber.next(data as T);
-        } catch {
-          // Non-JSON default messages are ignored (consistent with your old behavior)
+        subscriber.next({ type: 'open', data: undefined as unknown as T });
+      };
+
+      const onError = (err: any) => {
+        resetHeartbeat();
+        console.warn('[SSE] Connection error, will retry:', err);
+        subscriber.next({ type: 'error', data: err as T });
+        
+        // Auto-reconnect after a short delay
+        if (!closed) {
+          setTimeout(() => {
+            if (!closed) {
+              console.log('[SSE] Attempting to reconnect...');
+              start();
+            }
+          }, 2000);
         }
       };
 
-      // Build handlers for named events
-      const namedHandlers: Record<string, (e: MessageEvent) => void> = {};
-      for (const name of events) {
-        namedHandlers[name] = (e: MessageEvent) => {
-          resetHeartbeat();
-          let payload: any;
-          try {
-            payload = e.data === '' ? null : JSON.parse(e.data);
-          } catch {
-            payload = e.data; // accept non-JSON (e.g., heartbeat emoji)
-          }
+      const onMessage = (ev: MessageEvent) => {
+        resetHeartbeat();
+        const payload = safeParse(ev.data);
+        const inferredType =
+          payload && typeof payload === 'object' && typeof (payload as any).type === 'string'
+            ? (payload as any).type
+            : 'message';
 
-          if (mapNamedToType) {
-            // Inject a type for backward compatibility with your existing pipes
-            if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
-              subscriber.next({ ...(payload as object), type: name } as T);
-            } else {
-              subscriber.next({ type: name, data: payload } as unknown as T);
-            }
-          } else {
-            // Emit a structured wrapper if you ever want it
-            subscriber.next({ event: name, data: payload } as unknown as T);
-          }
-        };
-        es.addEventListener(name, namedHandlers[name] as any);
-      }
-
-      const onError = () => {
-        // Keep the observable alive; EventSource will auto-retry
-        // You could log here if needed.
+        subscriber.next({ type: inferredType, data: payload as T });
       };
 
-      es.addEventListener('message', onMessage);
-      es.addEventListener('error', onError);
+      es.addEventListener('open', onOpen as any);
+      es.addEventListener('error', onError as any);
+      es.addEventListener('message', onMessage as any);
 
-      // Arm initial heartbeat
+      const namedHandlers: Array<[string, (e: MessageEvent) => void]> = [];
+      for (const name of events) {
+        const handler = (e: MessageEvent) => {
+          resetHeartbeat();
+          const payload = safeParse(e.data);
+          subscriber.next({ type: name as SseNamedEvent, data: payload as T });
+        };
+        es.addEventListener(name, handler as any);
+        namedHandlers.push([name, handler]);
+      }
+
       resetHeartbeat();
 
-      // Cleanup function for this connection
       const cleanup = () => {
-        if (heartbeatTimer) clearTimeout(heartbeatTimer);
+        if (heartbeatTimer) {
+          clearTimeout(heartbeatTimer);
+          heartbeatTimer = null;
+        }
         if (!es) return;
         try {
-          es.removeEventListener('message', onMessage);
-          es.removeEventListener('error', onError);
-          for (const name of events) {
-            const h = namedHandlers[name];
-            if (h) es.removeEventListener(name, h as any);
+          es.removeEventListener('open', onOpen as any);
+          es.removeEventListener('error', onError as any);
+          es.removeEventListener('message', onMessage as any);
+          for (const [name, handler] of namedHandlers) {
+            es.removeEventListener(name, handler as any);
           }
           es.close();
         } catch {}
@@ -103,12 +132,13 @@ export function sse$<T = any>(url: string, opts?: SseOptions) {
       currentCleanup = cleanup;
     };
 
-    // start immediately
     start();
 
-    // Observable teardown
     return () => {
-      try { currentCleanup?.(); } catch {}
+      closed = true;
+      try {
+        currentCleanup?.();
+      } catch {}
       currentCleanup = null;
     };
   });

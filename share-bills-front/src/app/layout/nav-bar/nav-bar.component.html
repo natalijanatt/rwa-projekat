@@ -1,4 +1,3 @@
-<!-- shared/components/navbar/navbar.component.html -->
 <nav class="nav" role="navigation" aria-label="Main">
   <div class="nav__inner">
     <a class="nav__brand" routerLink="/" (click)="close()">ShareBills</a>
@@ -31,9 +30,6 @@
         <a routerLink="/register" routerLinkActive="active" (click)="close()">Register</a>
       </li>
 
-      <li *ngIf="isAuth()">
-        <button class="btn btn--ghost" (click)="logout(); close()">Log out</button>
-      </li>
     </ul>
   </div>
 </nav>

@@ -1,4 +1,3 @@
-// expense.finalizer.service.ts
 import {
   Inject,
   Injectable,
@@ -71,7 +70,7 @@ export class ExpenseFinalizerService implements OnModuleInit, OnModuleDestroy {
         } catch (e) {
           this.log.warn(`Boot finalize failed for ${id}: ${String(e)}`);
         }
-        await new Promise((r) => setTimeout(r, gapMs)); // gentle pacing
+        await new Promise((r) => setTimeout(r, gapMs));
       }
     });
 
@@ -90,8 +89,8 @@ export class ExpenseFinalizerService implements OnModuleInit, OnModuleDestroy {
         ? Math.max(0, deadlineOrDelay)
         : Math.max(0, new Date(deadlineOrDelay).getTime() - Date.now());
 
-    const min = 1000; // at least 1s
-    const jitter = Math.floor(Math.random() * 1000); // +0..999ms
+    const min = 1000;
+    const jitter = Math.floor(Math.random() * 1000); //ako se vise troskova zakaze u isto vreme, nece se svi zavrsiti istovremeno
     const delay = Math.max(min, baseDelay) + jitter;
     this.cancel(expenseId);
 

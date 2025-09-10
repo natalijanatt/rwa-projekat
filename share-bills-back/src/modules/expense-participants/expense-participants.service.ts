@@ -1,4 +1,9 @@
-import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -12,17 +17,24 @@ import { Expense, TxnType } from '../expenses/expense.entity';
 import { GroupMembersBalanceService } from '../group-members-balance/group-members-balance.service';
 import { ExpenseFinalizerService } from '../expenses/expense.finalizer.service';
 import { BaseExpenseDto } from '../expenses/dto/base-expense.dto';
+import { UserEventBus } from 'src/realtime/user-event.bus';
+import { UserEvent } from 'src/realtime/user-event.types';
+import { ResponseExpenseEvent } from 'src/realtime/dtos/response-expense-event';
+import { FinalizedExpenseEvent } from 'src/realtime/dtos/finalized-expense-event';
+import { GroupMember } from '../group-members/group-members.entity';
 
 @Injectable()
 export class ExpenseParticipantsService {
   constructor(
-  @InjectRepository(ExpenseParticipant)
-  private readonly repo: Repository<ExpenseParticipant>,
-  @Inject(forwardRef(() => ExpensesService))
-  private readonly expenseService: ExpensesService,
-  private readonly groupMembersBalanceService: GroupMembersBalanceService,
-  private readonly finalizer: ExpenseFinalizerService,
-) {}
+    @InjectRepository(ExpenseParticipant)
+    private readonly repo: Repository<ExpenseParticipant>,
+    @Inject(forwardRef(() => ExpensesService))
+    private readonly expenseService: ExpensesService,
+    private readonly groupMembersBalanceService: GroupMembersBalanceService,
+    @Inject(forwardRef(() => ExpenseFinalizerService))
+    private readonly finalizer: ExpenseFinalizerService,
+    private readonly bus: UserEventBus,
+  ) {}
 
   async checkParticipant(expenseId: number, userId: number, memberId: number) {
     const participant = await this.repo
@@ -47,7 +59,6 @@ export class ExpenseParticipantsService {
 
         const deadlineMs = new Date(expense.acceptanceDeadline).getTime();
         const msLeft = Math.max(0, deadlineMs - Date.now());
-
         const finalized = Boolean(expense.finalizedAt) || msLeft <= 0;
 
         return { data: { msLeft, finalized } } as {
@@ -58,14 +69,71 @@ export class ExpenseParticipantsService {
     );
   }
 
+  private async finalizeCore(
+    manager: import('typeorm').EntityManager,
+    exp: Expense,
+    opts: { declinePendingBeforeFinalize: boolean },
+  ): Promise<{ finalized: true; expenseId: number; groupId: number; acceptedCount: number }> {
+    const expenseRepo = manager.getRepository(Expense);
+    const participantRepo = manager.getRepository(ExpenseParticipant);
+
+    if (opts.declinePendingBeforeFinalize) {
+      await participantRepo
+        .createQueryBuilder()
+        .update(ExpenseParticipant)
+        .set({ status: ParticipantStatus.Declined })
+        .where('expense_id = :expenseId', { expenseId: exp.id })
+        .andWhere('status = :pending', { pending: ParticipantStatus.Pending })
+        .execute();
+    }
+
+    const acceptedRows: { memberId: number }[] = await participantRepo
+      .createQueryBuilder('p')
+      .select('p.member_id', 'memberId')
+      .where('p.expense_id = :expenseId', { expenseId: exp.id })
+      .andWhere('p.status = :status', { status: ParticipantStatus.Accepted })
+      .andWhere('p.member_id <> :payerId', { payerId: exp.paidById })
+      .getRawMany();
+    console.log('acceptedRows', acceptedRows);
+    const acceptedCount = acceptedRows.length + 1;
+
+    if (String(exp.txnType) === 'expense' && acceptedCount > 1) {
+      const share = Number((Number(exp.amount) / (acceptedCount + 1)).toFixed(2));
+
+      await this.groupMembersBalanceService.expenseBalance(
+        exp.id,
+        share,
+        exp.paidById,
+        exp.groupId,
+        acceptedRows,
+      );
+    }
+
+    const now = new Date();
+    await expenseRepo.update({ id: exp.id }, { finalizedAt: now });
+
+    this.finalizer?.cancel(exp.id);
+
+    //Notify payer about finalization
+    await this.notifyPayer(exp.id, 'finalization', acceptedCount);
+
+    return {
+      finalized: true,
+      expenseId: exp.id,
+      groupId: exp.groupId,
+      acceptedCount,
+    };
+  }
+
   async respond(
     expenseId: number,
-    memberId: number,
+    member: GroupMember,
     status: ParticipantStatus,
   ) {
     return this.repo.manager.transaction(async (manager) => {
       const expenseRepo = manager.getRepository(Expense);
       const participantRepo = manager.getRepository(ExpenseParticipant);
+
       const exp = await expenseRepo
         .createQueryBuilder('e')
         .setLock('pessimistic_write')
@@ -79,55 +147,32 @@ export class ExpenseParticipantsService {
       if (exp.finalizedAt) {
         return { finalized: true, expenseId };
       }
-
+      
       await participantRepo
         .createQueryBuilder()
         .update(ExpenseParticipant)
         .set({ status, respondedAt: () => 'now()', hasMissed: false })
         .where('expense_id = :expenseId', { expenseId })
-        .andWhere('member_id = :memberId', { memberId })
+        .andWhere('member_id = :memberId', { memberId: member.id })
         .execute();
+
+      await this.notifyPayer(expenseId, 'response', 0, member.user.name, status);
 
       const pending = await participantRepo
         .createQueryBuilder('p')
         .where('p.expense_id = :expenseId', { expenseId })
-        .andWhere('p.status = :status', { status: 'pending' })
+        .andWhere('p.status = :status', { status: ParticipantStatus.Pending })
         .getCount();
 
       if (pending > 0) {
         return { finalized: false, expenseId };
       }
 
-      if (String(exp.txnType) === 'expense') {
-        const acceptedRows: { memberId: number }[] = await participantRepo
-          .createQueryBuilder('p')
-          .select('p.member_id', 'memberId')
-          .where('p.expense_id = :expenseId', { expenseId })
-          .andWhere('p.status = :status', { status: 'accepted' })
-          .andWhere('p.member_id <> :payerId', { payerId: exp.paidById })
-          .getRawMany();
+      const result = await this.finalizeCore(manager, exp, {
+        declinePendingBeforeFinalize: false,
+      });
 
-        const accepted = acceptedRows.length;
-
-        if (accepted === 0) {
-          throw new BadRequestException(
-            'No participants (excluding payer) accepted the expense',
-          );
-        }
-
-        const share = Number((Number(exp.amount) / (accepted + 1)).toFixed(2));
-
-        await this.groupMembersBalanceService.expenseBalance(
-          expenseId,
-          share,
-          exp.paidById,
-          exp.groupId,
-          acceptedRows,
-        );
-      }
-
-      await expenseRepo.update({ id: expenseId }, { finalizedAt: new Date() });
-      return { finalized: true, expenseId, groupId: exp.groupId };
+      return { finalized: true, expenseId: result.expenseId, groupId: result.groupId };
     });
   }
 
@@ -136,7 +181,6 @@ export class ExpenseParticipantsService {
 
     return this.repo.manager.transaction(async (manager) => {
       const expenseRepo = manager.getRepository(Expense);
-      const participantRepo = manager.getRepository(ExpenseParticipant);
 
       const exp = await expenseRepo
         .createQueryBuilder('e')
@@ -146,13 +190,14 @@ export class ExpenseParticipantsService {
 
       if (!exp) throw new BadRequestException('Expense not found');
 
-      if (exp.finalizedAt)
+      if (exp.finalizedAt) {
         return {
           finalized: true,
           expenseId: exp.id,
           groupId: exp.groupId,
           alreadyFinalized: true,
         };
+      }
 
       const now = new Date();
       const deadline = new Date(exp.acceptanceDeadline);
@@ -165,46 +210,16 @@ export class ExpenseParticipantsService {
         };
       }
 
-      await participantRepo
-        .createQueryBuilder()
-        .update(ExpenseParticipant)
-        .set({ status: ParticipantStatus.Declined })
-        .where('expense_id = :expenseId', { expenseId: exp.id })
-        .andWhere('status = :pending', { pending: ParticipantStatus.Pending })
-        .execute();
+      //Expired or forced -> decline remaining pendings, then finalize
+      const result = await this.finalizeCore(manager, exp, {
+        declinePendingBeforeFinalize: true,
+      });
 
-      const acceptedRows: { memberId: number }[] = await participantRepo
-        .createQueryBuilder('p')
-        .select('p.member_id', 'memberId')
-        .where('p.expense_id = :expenseId', { expenseId: exp.id })
-        .andWhere('p.status = :status', { status: ParticipantStatus.Accepted })
-        .andWhere('p.member_id <> :payerId', { payerId: exp.paidById })
-        .getRawMany();
-
-      const acceptedIds = acceptedRows.map((r) => r.memberId);
-      const acceptedCount = acceptedIds.length;
-
-      if (String(exp.txnType) === 'expense' && acceptedCount > 0) {
-        const share = Number(
-          (Number(exp.amount) / (acceptedCount + 1)).toFixed(2),
-        );
-
-        await this.groupMembersBalanceService.expenseBalance(
-          exp.id,
-          share,
-          exp.paidById,
-          exp.groupId,
-          acceptedRows,
-        );
-      }
-
-      await expenseRepo.update({ id: exp.id }, { finalizedAt: now });
-      this.finalizer?.cancel(expenseId);
       return {
         finalized: true,
-        expenseId: exp.id,
-        groupId: exp.groupId,
-        acceptedCount,
+        expenseId: result.expenseId,
+        groupId: result.groupId,
+        acceptedCount: result.acceptedCount,
       };
     });
   }
@@ -229,7 +244,7 @@ export class ExpenseParticipantsService {
       .leftJoinAndSelect('p.expense', 'expense')
       .leftJoinAndSelect('expense.group', 'group')
       .leftJoinAndSelect('expense.paidBy', 'paidBy')
-      .leftJoinAndSelect('paidBy.user', 'paidByUser') // <-- missing join
+      .leftJoinAndSelect('paidBy.user', 'paidByUser')
       .leftJoinAndSelect('p.member', 'member')
       .leftJoinAndSelect('member.user', 'user')
       .where('user.id = :userId', { userId })
@@ -321,5 +336,62 @@ export class ExpenseParticipantsService {
         { status, hasMissed: false, respondedAt: () => 'CURRENT_TIMESTAMP' },
       );
     });
+  }
+
+  async notifyPayer(
+    expenseId: number,
+    type: 'response' | 'finalization',
+    acceptedCount?: number,
+    respondFrom?: string,
+    status?: ParticipantStatus,
+  ) {
+    const exp = await this.expenseService.findOne(expenseId);
+    if (!exp) {
+      return;
+    }
+    const evType =
+      type === 'response' ? 'expense.responded' : 'expense.finalized';
+    let data: ResponseExpenseEvent | FinalizedExpenseEvent;
+    let ev: UserEvent;
+
+    if (evType === 'expense.responded' && respondFrom && status) {
+      data = {
+        expense: exp,
+        respondFrom,
+        groupName: exp?.group?.name || 'Loading...',
+        groupCurrencyCode: exp?.group?.baseCurrencyCode || 'USD',
+        status,
+      };
+      ev = { type: evType, data };
+    } else {
+      data = {
+        expense: exp,
+        expensePartcipantsCount: acceptedCount || 0,
+        groupName: exp?.group?.name || 'Loading...',
+        groupCurrencyCode: exp?.group?.baseCurrencyCode || 'USD',
+      };
+      ev = { type: 'expense.finalized', data };
+    }
+
+    this.bus.emitToUser(exp.paidBy.user.id, ev);
+  }
+
+  async notifyReciever(expenseId: number) {
+    const expense = await this.expenseService.findOne(expenseId);
+    if (!expense) throw new BadRequestException('Expense not found');
+    if(expense.txnType !== TxnType.TRANSFER) return;
+
+    const ev: UserEvent = {
+      type: 'expense.transferred',
+      data: {
+        expense,
+        transferFrom: expense.paidBy?.user.name || 'Loading...',
+        groupName: expense?.group?.name || 'Loading...',
+        groupCurrencyCode: expense?.group?.baseCurrencyCode || 'USD',
+        amount: expense.amount,
+      },
+    };
+    console.log('Notifying user id:', expense.paidTo?.user.id, 'with event:', ev);
+    this.bus.emitToUser(expense.paidTo?.user.id || 0, ev);
   }
 }

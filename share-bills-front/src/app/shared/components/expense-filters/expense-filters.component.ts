@@ -37,7 +37,6 @@ export class ExpenseFiltersComponent {
   private store = inject(Store);
   private groupService = inject(GroupService);
 
-  /** Optional: can be provided by parent. If empty, we fetch on init. */
   @Input() groups: GroupBaseDto[] = [];
   @Output() filtersChange = new EventEmitter<ExpenseFilterDto>();
 
@@ -46,20 +45,18 @@ export class ExpenseFiltersComponent {
 
   form = this.fb.nonNullable.group({
     groupId: null as number | null,
-    status: '' as 'accepted' | 'declined', // '' = Any
-    paidBy: null as number | null,
+    status: '' as 'accepted' | 'declined',
+    paidBy: { value: null as number | null, disabled: true },
     ordredBy: 'createdAt' as 'createdAt' | 'amount' | 'title',
     orderDirection: 'DESC' as 'ASC' | 'DESC',
     page: 1,
   });
 
   ngOnInit() {
-    // Current user id (always included in filters)
     this.store.select(selectUser)
       .pipe()
       .subscribe(u => { this.userId = u?.id ?? null; });
 
-    // Load groups if not passed in
     if (!this.groups?.length) {
       this.groupService.getAllGroups()
         .pipe()
@@ -68,12 +65,12 @@ export class ExpenseFiltersComponent {
   }
 
   onGroupChange(groupId: number | null) {
-    // Reset paidBy on group change
     this.form.patchValue({ paidBy: null });
 
     if (groupId == null) {
       this.members = [];
       this.form.patchValue({ groupId: null });
+      this.form.get('paidBy')?.disable();
       return;
     }
 
@@ -82,6 +79,13 @@ export class ExpenseFiltersComponent {
       .subscribe(group => {
         this.members = group?.members || [];
         this.form.patchValue({ groupId: group?.id ?? null });
+        
+        // Enable paidBy control if there are members, otherwise disable it
+        if (this.members.length > 0) {
+          this.form.get('paidBy')?.enable();
+        } else {
+          this.form.get('paidBy')?.disable();
+        }
       });
   }
 
@@ -89,9 +93,9 @@ export class ExpenseFiltersComponent {
     const raw = this.form.getRawValue();
 
     const filters: ExpenseFilterDto = {
-      userId: this.userId ?? undefined,              // always added
-      groupId: raw.groupId ?? undefined,             // optional
-      status: raw.status || undefined,               // selectable
+      userId: this.userId ?? undefined,
+      groupId: raw.groupId ?? undefined,
+      status: raw.status || undefined,
       paidBy: raw.paidBy ?? undefined,
       ordredBy: raw.ordredBy,
       orderDirection: raw.orderDirection,
@@ -111,6 +115,9 @@ export class ExpenseFiltersComponent {
       orderDirection: 'DESC',
       page: 1,
     }, { emitEvent: false });
+    
+    // Disable paidBy control after reset
+    this.form.get('paidBy')?.disable();
 
     this.applyFilters();
   }

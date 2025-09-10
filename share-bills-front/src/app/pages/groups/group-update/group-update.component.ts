@@ -64,7 +64,6 @@ export class GroupUpdateComponent {
   }
 
   onCoverError(message: string) {
-    console.warn(message);
   }
 
   onCancel() {

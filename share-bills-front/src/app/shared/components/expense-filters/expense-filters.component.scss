@@ -1,42 +1,88 @@
 .filters {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem;
+  background: linear-gradient(135deg, #2b2b2b 0%, #1e1e1e 100%);
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid rgba(0, 127, 159, 0.2);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #007F9F, #6f42c1, #007F9F);
+    border-radius: 20px 20px 0 0;
+  }
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(0, 127, 159, 0.03) 0%, transparent 70%);
+    pointer-events: none;
+  }
 }
 
 .row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
   align-items: end;
+  position: relative;
+  z-index: 1;
 }
 
 .toggle {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
   align-self: center;
+  background: rgba(0, 127, 159, 0.05);
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 127, 159, 0.2);
+  backdrop-filter: blur(10px);
 
   .label {
     font-size: 0.875rem;
-    color: #adb5bd;
-    font-weight: 500;
+    color: #ffffff;
+    font-weight: 600;
     text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
   }
 }
 
 .actions {
   display: flex;
-  gap: 0.75rem;
+  gap: 1rem;
   align-items: center;
   justify-content: flex-end;
   flex-wrap: wrap;
+  margin-top: 0.5rem;
+  position: relative;
+  z-index: 1;
 }
 
 /* Material Form Field Customization */
 ::ng-deep {
   .mat-mdc-form-field {
     width: 100%;
+    position: relative;
     
     .mat-mdc-form-field-wrapper {
       padding-bottom: 0;
@@ -47,20 +93,49 @@
     }
     
     .mat-mdc-text-field-wrapper {
-      background: #2d2d2d;
-      border-radius: 8px;
-      border: 1px solid #555;
-      transition: all 0.2s ease;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+      
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(0, 127, 159, 0.1) 0%, rgba(111, 66, 193, 0.1) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+      }
       
       &:hover {
-        border-color: #007F9F;
-        background: #333333;
+        border-color: rgba(0, 127, 159, 0.5);
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateY(-1px);
+        box-shadow: 0 8px 25px rgba(0, 127, 159, 0.15);
+        
+        &::before {
+          opacity: 1;
+        }
       }
       
       &.mat-focused {
         border-color: #007F9F;
-        box-shadow: 0 0 0 2px rgba(0, 127, 159, 0.2);
-        background: #333333;
+        box-shadow: 
+          0 0 0 3px rgba(0, 127, 159, 0.2),
+          0 8px 25px rgba(0, 127, 159, 0.2);
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
+        
+        &::before {
+          opacity: 1;
+        }
       }
     }
     
@@ -70,84 +145,207 @@
     
     .mat-mdc-form-field-label {
       color: #ffffff;
-      font-weight: 500;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     
     .mat-mdc-select-value {
       color: #ffffff;
-      font-weight: 400;
+      font-weight: 500;
+      font-size: 0.95rem;
     }
     
     .mat-mdc-select-arrow {
-      color: #adb5bd;
+      color: #007F9F;
+      transition: all 0.3s ease;
     }
     
     .mat-mdc-form-field-icon-suffix {
-      color: #adb5bd;
+      color: #007F9F;
     }
 
     /* Input text styling */
     .mat-mdc-input-element {
       color: #ffffff !important;
-      font-weight: 400;
+      font-weight: 500;
+      font-size: 0.95rem;
       
       &::placeholder {
-        color: #adb5bd !important;
-        opacity: 0.7;
+        color: rgba(255, 255, 255, 0.6) !important;
+        opacity: 0.8;
+        font-style: italic;
       }
     }
 
     /* Select panel styling */
     .mat-mdc-select-panel {
-      background: #2d2d2d;
-      border: 1px solid #555;
-      border-radius: 8px;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      background: linear-gradient(135deg, #2b2b2b 0%, #1e1e1e 100%);
+      border: 1px solid rgba(0, 127, 159, 0.3);
+      border-radius: 12px;
+      box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      overflow: hidden;
     }
 
-    /* Option styling */
-    .mat-mdc-option {
-      color: #ffffff;
+    /* Option styling - Comprehensive targeting */
+    .mat-mdc-option,
+    .mat-option,
+    .mdc-list-item,
+    .mat-mdc-option.mdc-list-item {
+      background: #2b2b2b !important;
+      color: #adb5bd !important;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      position: relative;
+      
+      .mat-mdc-option-text,
+      .mat-option-text,
+      .mdc-list-item__primary-text {
+        color: #adb5bd !important;
+      }
+      
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: linear-gradient(135deg, #007F9F, #6f42c1);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
       
       &:hover {
-        background: rgba(0, 127, 159, 0.1);
+        background: rgba(0, 127, 159, 0.15) !important;
+        color: #ffffff !important;
+        transform: translateX(4px);
+        
+        .mat-mdc-option-text,
+        .mat-option-text,
+        .mdc-list-item__primary-text {
+          color: #ffffff !important;
+        }
+        
+        &::before {
+          opacity: 1;
+        }
       }
       
-      &.mat-mdc-option-active {
-        background: rgba(0, 127, 159, 0.2);
+      &.mat-mdc-option-active,
+      &.mat-option-active {
+        background: rgba(0, 127, 159, 0.25) !important;
+        color: #007F9F !important;
+        font-weight: 600;
+        
+        .mat-mdc-option-text,
+        .mat-option-text,
+        .mdc-list-item__primary-text {
+          color: #007F9F !important;
+        }
       }
       
-      &.mat-mdc-selected {
-        background: rgba(0, 127, 159, 0.3);
-        color: #007F9F;
+      &.mat-mdc-selected,
+      &.mat-option-selected,
+      &.mdc-list-item--selected {
+        background: linear-gradient(135deg, rgba(0, 127, 159, 0.3), rgba(111, 66, 193, 0.3)) !important;
+        color: #adb5bd !important;
+        font-weight: 600;
+        
+        .mat-mdc-option-text,
+        .mat-option-text,
+        .mdc-list-item__primary-text {
+          color: #adb5bd !important;
+        }
+        
+        &::before {
+          opacity: 1;
+        }
+      }
+    }
+    
+    /* Additional targeting for Angular Material dropdowns */
+    .mat-mdc-select-panel .mat-mdc-option,
+    .mat-mdc-select-panel .mat-option,
+    .mat-mdc-select-panel .mdc-list-item {
+      background: #2b2b2b !important;
+      color: #adb5bd !important;
+      
+      &:hover {
+        background: rgba(0, 127, 159, 0.15) !important;
+        color: #ffffff !important;
+      }
+      
+      &.mat-mdc-selected,
+      &.mat-option-selected {
+        background: linear-gradient(135deg, rgba(0, 127, 159, 0.3), rgba(111, 66, 193, 0.3)) !important;
+        color: #adb5bd !important;
       }
     }
   }
   
   /* Button Toggle Group Styling */
   .mat-button-toggle-group {
-    border: 1px solid #555;
-    border-radius: 8px;
+    border: 1px solid rgba(0, 127, 159, 0.3);
+    border-radius: 12px;
     overflow: hidden;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
     
     .mat-button-toggle {
-      background: #404040;
-      color: #e9ecef;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.7);
       border: none;
-      min-width: 60px;
+      min-width: 70px;
+      position: relative;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(0, 127, 159, 0.1), rgba(111, 66, 193, 0.1));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
       
       &.mat-button-toggle-checked {
-        background: #007F9F;
+        background: linear-gradient(135deg, #007F9F, #6f42c1);
         color: #ffffff;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(0, 127, 159, 0.3);
+        transform: translateY(-1px);
+        
+        &::before {
+          opacity: 1;
+        }
       }
       
       &:hover:not(.mat-button-toggle-checked) {
-        background: #555;
+        background: rgba(0, 127, 159, 0.1);
+        color: #ffffff;
+        transform: translateY(-1px);
+        
+        &::before {
+          opacity: 1;
+        }
       }
       
       .mat-button-toggle-label-content {
-        font-weight: 500;
+        font-weight: 600;
         font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: relative;
+        z-index: 1;
       }
     }
   }
@@ -156,36 +354,67 @@
   .mat-mdc-button,
   .mat-mdc-raised-button,
   .mat-mdc-stroked-button {
-    border-radius: 8px;
-    font-weight: 500;
-    text-transform: none;
+    border-radius: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
     letter-spacing: 0.5px;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    min-height: 48px;
+    padding: 0 2rem;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      transition: left 0.5s ease;
+    }
+    
+    &:hover::before {
+      left: 100%;
+    }
     
     &.mat-primary {
-      background: linear-gradient(135deg, #007F9F, #005a7a);
+      background: linear-gradient(135deg, #007F9F, #6f42c1);
       color: #ffffff;
       border: none;
+      box-shadow: 0 4px 15px rgba(0, 127, 159, 0.3);
       
       &:hover {
-        background: linear-gradient(135deg, #005a7a, #004466);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 127, 159, 0.3);
+        background: linear-gradient(135deg, #005a7a, #5a2d91);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 127, 159, 0.4);
+      }
+      
+      &:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 10px rgba(0, 127, 159, 0.3);
       }
     }
     
     &.mat-stroked-button {
-      border-color: #007F9F;
+      border: 2px solid #007F9F;
       color: #007F9F;
+      background: rgba(0, 127, 159, 0.05);
+      backdrop-filter: blur(10px);
       
       &:hover {
-        background: rgba(0, 127, 159, 0.1);
-        transform: translateY(-1px);
+        background: linear-gradient(135deg, rgba(0, 127, 159, 0.2), rgba(111, 66, 193, 0.2));
+        border-color: #6f42c1;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 127, 159, 0.3);
       }
     }
     
     .mat-icon {
-      margin-right: 0.5rem;
+      margin-right: 0.75rem;
+      font-size: 1.2rem;
+      width: 1.2rem;
+      height: 1.2rem;
     }
   }
 }
@@ -193,47 +422,99 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .filters {
-    gap: 1rem;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    border-radius: 16px;
   }
   
   .row {
     grid-template-columns: 1fr;
-    gap: 0.75rem;
+    gap: 1rem;
   }
   
   .actions {
     justify-content: stretch;
     flex-direction: column;
+    gap: 0.75rem;
     
     button {
       width: 100%;
       justify-content: center;
+      min-height: 52px;
     }
   }
   
   .toggle {
     align-self: stretch;
+    padding: 0.75rem;
     
     .label {
       text-align: center;
       margin-bottom: 0.5rem;
+      font-size: 0.8rem;
+    }
+  }
+  
+  ::ng-deep {
+    .mat-button-toggle-group {
+      .mat-button-toggle {
+        min-width: 60px;
+        
+        .mat-button-toggle-label-content {
+          font-size: 0.8rem;
+        }
+      }
     }
   }
 }
 
 @media (max-width: 480px) {
   .filters {
-    gap: 0.75rem;
+    gap: 1.25rem;
+    padding: 1.25rem;
+    border-radius: 12px;
   }
   
   .row {
+    gap: 0.75rem;
+  }
+  
+  .toggle {
+    padding: 0.5rem;
+    
+    .label {
+      font-size: 0.75rem;
+    }
+  }
+  
+  .actions {
     gap: 0.5rem;
+    
+    button {
+      min-height: 48px;
+      padding: 0 1.5rem;
+      
+      .mat-icon {
+        margin-right: 0.5rem;
+        font-size: 1rem;
+        width: 1rem;
+        height: 1rem;
+      }
+    }
   }
   
   ::ng-deep {
     .mat-mdc-form-field {
       .mat-mdc-text-field-wrapper {
         padding: 0.75rem;
+      }
+      
+      .mat-mdc-form-field-label {
+        font-size: 0.8rem;
+      }
+      
+      .mat-mdc-select-value {
+        font-size: 0.85rem;
       }
     }
     
@@ -242,8 +523,116 @@
         min-width: 50px;
         
         .mat-button-toggle-label-content {
-          font-size: 0.8rem;
+          font-size: 0.75rem;
         }
+      }
+    }
+  }
+}
+
+/* Global styles to ensure dropdown options are styled correctly */
+::ng-deep .mat-mdc-select-panel {
+  .mat-mdc-option,
+  .mat-option,
+  .mdc-list-item {
+    background: #2b2b2b !important;
+    color: #adb5bd !important;
+    
+    &:hover {
+      background: rgba(0, 127, 159, 0.15) !important;
+      color: #ffffff !important;
+    }
+    
+    &.mat-mdc-selected,
+    &.mat-option-selected {
+      background: linear-gradient(135deg, rgba(0, 127, 159, 0.3), rgba(111, 66, 193, 0.3)) !important;
+      color: #adb5bd !important;
+    }
+  }
+}
+
+/* CDK Overlay specific styling */
+::ng-deep .cdk-overlay-pane:not(.mat-mdc-select-panel-above) div.mat-mdc-select-panel {
+  background: linear-gradient(135deg, #2b2b2b 0%, #1e1e1e 100%) !important;
+  border: 1px solid rgba(0, 127, 159, 0.3) !important;
+  border-radius: 12px !important;
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(20px) !important;
+  overflow: hidden !important;
+  
+  .mat-mdc-option,
+  .mat-option,
+  .mdc-list-item {
+    background: #2b2b2b !important;
+    color: #adb5bd !important;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    position: relative;
+    
+    .mat-mdc-option-text,
+    .mat-option-text,
+    .mdc-list-item__primary-text {
+      color: #adb5bd !important;
+    }
+    
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(135deg, #007F9F, #6f42c1);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    
+    &:hover {
+      background: rgba(0, 127, 159, 0.15) !important;
+      color: #ffffff !important;
+      transform: translateX(4px);
+      
+      .mat-mdc-option-text,
+      .mat-option-text,
+      .mdc-list-item__primary-text {
+        color: #ffffff !important;
+      }
+      
+      &::before {
+        opacity: 1;
+      }
+    }
+    
+    &.mat-mdc-option-active,
+    &.mat-option-active {
+      background: rgba(0, 127, 159, 0.25) !important;
+      color: #007F9F !important;
+      font-weight: 600;
+      
+      .mat-mdc-option-text,
+      .mat-option-text,
+      .mdc-list-item__primary-text {
+        color: #007F9F !important;
+      }
+    }
+    
+    &.mat-mdc-selected,
+    &.mat-option-selected,
+    &.mdc-list-item--selected {
+      background: linear-gradient(135deg, rgba(0, 127, 159, 0.3), rgba(111, 66, 193, 0.3)) !important;
+      color: #adb5bd !important;
+      font-weight: 600;
+      
+      .mat-mdc-option-text,
+      .mat-option-text,
+      .mdc-list-item__primary-text {
+        color: #adb5bd !important;
+      }
+      
+      &::before {
+        opacity: 1;
       }
     }
   }

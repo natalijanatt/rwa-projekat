@@ -5,7 +5,6 @@ export class FullUserDto {
   name: string;
   email: string;
   imagePath?: string;
-  password: string;
   createdAt: Date;
   groupsOwned: number[];
   memberships: number[];
@@ -16,7 +15,6 @@ export class FullUserDto {
     this.name = entity.name;
     this.email = entity.email;
     this.imagePath = entity.imagePath;
-    this.password = entity.passwordHash;
     this.createdAt = entity.createdAt;
     this.groupsOwned = entity.groupsOwned?.map((g) => g.id);
     this.memberships = entity.memberships?.map((gm) => gm.groupId);

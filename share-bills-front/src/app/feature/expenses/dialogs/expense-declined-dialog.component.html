@@ -1,0 +1,44 @@
+<div class="expense-declined-dialog">
+  <div class="dialog-header">
+    <div class="decline-icon">
+      <mat-icon>cancel</mat-icon>
+    </div>
+    <h2 mat-dialog-title class="dialog-title">Expense Declined</h2>
+  </div>
+  
+  <mat-dialog-content class="dialog-content">
+    <div class="response-card">
+      <div class="response-message">
+        <p class="main-message">{{data.event.respondFrom}} declined your expense</p>
+        <p class="expense-title">{{data.event.expense.title}}</p>
+      </div>
+      
+      <div class="expense-amount">
+        <span class="amount-value">{{formatCurrency(data.event.expense.amount)}}</span>
+      </div>
+      
+      <div class="response-details">
+        <div class="detail-item">
+          <mat-icon class="detail-icon">group</mat-icon>
+          <span class="detail-label">Group:</span>
+          <span class="detail-value">{{data.event.groupName}}</span>
+        </div>
+        <div class="detail-item">
+          <mat-icon class="detail-icon">person</mat-icon>
+          <span class="detail-label">Declined by:</span>
+          <span class="detail-value">{{data.event.respondFrom}}</span>
+        </div>
+      </div>
+    </div>
+  </mat-dialog-content>
+  
+  <mat-dialog-actions align="center" class="dialog-actions">
+    <button mat-raised-button 
+            color="warn" 
+            class="ok-button" 
+            (click)="onOk()">
+      <mat-icon>close</mat-icon>
+      <span>Understood</span>
+    </button>
+  </mat-dialog-actions>
+</div>

@@ -94,12 +94,12 @@
             Update Profile
           </button>
           
-          <button class="action-button secondary" routerLink="/app/settings">
+          <button class="action-button secondary" (click)="onUpdateProfile()">
             <span class="button-icon">⚙️</span>
             Settings
           </button>
           
-          <button class="action-button danger" routerLink="/logout">
+          <button class="action-button danger" (click)="onLogout()">
             <span class="button-icon">🚪</span>
             Log Out
           </button>

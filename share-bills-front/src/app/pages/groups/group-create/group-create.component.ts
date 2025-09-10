@@ -30,7 +30,31 @@ export class GroupCreateComponent {
 
   form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(3)]],
+    baseCurrencyCode: ['EUR', [Validators.required]],
   });
+
+  currencyOptions = [
+    { code: 'RSD', name: 'Serbian Dinar (RSD)' },
+    { code: 'EUR', name: 'Euro (EUR)' },
+    { code: 'USD', name: 'US Dollar (USD)' },
+    { code: 'GBP', name: 'British Pound (GBP)' },
+    { code: 'CHF', name: 'Swiss Franc (CHF)' },
+    { code: 'JPY', name: 'Japanese Yen (JPY)' },
+    { code: 'CAD', name: 'Canadian Dollar (CAD)' },
+    { code: 'AUD', name: 'Australian Dollar (AUD)' },
+    { code: 'NOK', name: 'Norwegian Krone (NOK)' },
+    { code: 'SEK', name: 'Swedish Krona (SEK)' },
+    { code: 'DKK', name: 'Danish Krone (DKK)' },
+    { code: 'PLN', name: 'Polish Złoty (PLN)' },
+    { code: 'CZK', name: 'Czech Koruna (CZK)' },
+    { code: 'HUF', name: 'Hungarian Forint (HUF)' },
+    { code: 'BGN', name: 'Bulgarian Lev (BGN)' },
+    { code: 'RON', name: 'Romanian Leu (RON)' },
+    { code: 'HRK', name: 'Croatian Kuna (HRK)' },
+    { code: 'BAM', name: 'Bosnia-Herzegovina Mark (BAM)' },
+    { code: 'MKD', name: 'Macedonian Denar (MKD)' },
+    { code: 'ALL', name: 'Albanian Lek (ALL)' },
+  ];
 
   onInputString(control: 'name', v: string | number) {
     const val = typeof v === 'number' ? String(v) : v;
@@ -38,13 +62,18 @@ export class GroupCreateComponent {
     this.form.controls[control].markAsDirty();
   }
 
-  onSubmit({ name }: { name: string }) {
+  onCurrencyChange(currencyCode: string) {
+    this.form.controls.baseCurrencyCode.setValue(currencyCode);
+    this.form.controls.baseCurrencyCode.markAsDirty();
+  }
+
+  onSubmit({ name, baseCurrencyCode }: { name: string, baseCurrencyCode: string }) {
     if (this.loading) return;
     this.loading = true;
     this.error = null;
 
     this.groupsService
-      .createGroup({ name }, this.selectedFile ?? undefined)
+      .createGroup({ name, baseCurrencyCode }, this.selectedFile ?? undefined)
       .subscribe({
         next: (group) => {
           this.router.navigate([`/groups/${group.id}`]);
@@ -66,6 +95,5 @@ export class GroupCreateComponent {
   }
 
   onCoverError(message: string) {
-    console.warn(message);
   }
 }

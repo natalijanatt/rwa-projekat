@@ -1,17 +1,19 @@
-import { HttpClient, HttpErrorResponse } from "@angular/common/http";
+import { HttpClient } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
 import { environment } from "../../../environment/environment";
 import { UserCreateDto } from "./data/user-create.dto";
 import { UserFilterDto } from "./data/user-filter.dto";
 import { UserDto } from "./data/user.dto";
 import { UserUpdateDto } from "./data/user-update.dto";
-import { catchError, throwError } from "rxjs";
+import { catchError } from "rxjs";
+import { ErrorService } from "../../core/services/error.service";
 
 @Injectable({
     providedIn: 'root'
 })
 export class UserService {
     private http = inject(HttpClient);
+    private errorService = inject(ErrorService);
     private base = environment.apiUrl;
 
     updateAvatar(file: File) {
@@ -20,7 +22,9 @@ export class UserService {
         return this.http.post(`${this.base}/users/avatar`, formData, {
             reportProgress: true,
             observe: 'events'
-        });
+        }).pipe(
+            catchError((err) => this.errorService.handleHttpError(err))
+        );
     }
 
     searchUsers(filters: UserFilterDto) {
@@ -28,12 +32,10 @@ export class UserService {
             params: {
                 query: filters.query || ''
             }
-        });
+        }).pipe(
+            catchError((err) => this.errorService.handleHttpError(err))
+        );
     }
-
-    // updateUser(userData: Partial<UserDto>) {
-    //     return this.http.patch<UserDto>(`${this.base}/users`, userData);
-    // }
 
     updateUser(userData: UserUpdateDto, image: File | null) {
         const url = `${this.base}/users`;
@@ -41,12 +43,7 @@ export class UserService {
             ? this.http.patch<UserDto>(url, this.toFormData(userData, image))
             : this.http.patch<UserDto>(url, userData);
         return request$.pipe(
-            catchError((err: HttpErrorResponse) => {
-                const msg =
-                    (Array.isArray(err.error?.message) ? err.error.message.join(', ') : err.error?.message) ||
-                    err.message || 'User update failed';
-                return throwError(() => ({ ...err, friendlyMessage: msg }));
-            })
+            catchError((err) => this.errorService.handleHttpError(err))
         );
     }
 

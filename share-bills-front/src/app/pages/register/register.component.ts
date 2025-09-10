@@ -75,6 +75,5 @@ export class RegisterComponent {
   }
 
   onAvatarError(message: string) {
-    console.warn(message);
   }
 }

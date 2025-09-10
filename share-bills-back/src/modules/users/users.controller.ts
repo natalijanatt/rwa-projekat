@@ -5,7 +5,6 @@ import {
   Patch,
   UseGuards,
   ValidationPipe,
-  Req,
   BadRequestException,
   Post,
   UseInterceptors,
@@ -15,16 +14,16 @@ import {
   MaxFileSizeValidator,
   FileTypeValidator,
 } from '@nestjs/common';
-import type { Request } from 'express';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { AuthGuard } from '@nestjs/passport';
 import { FullUserDto } from './dto/full-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { BaseUserDto } from './dto/base-user.dto';
 import { FilterUserDto } from './dto/filter-user.dto';
 import { ExpensesService } from '../expenses/expenses.service';
 import { StorageService } from '../storage/storage.service';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -35,16 +34,12 @@ export class UsersController {
   ) {}
 
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(
-    @Req() req: Request & { user?: { userId: number } },
+    @CurrentUser() userId: number,
     @Query('query') query: string,
   ): Promise<BaseUserDto[]> {
-    const userId = req.user?.userId;
-    if (!userId || isNaN(Number(userId))) {
-      throw new BadRequestException('Invalid or missing user id in JWT');
-    }
     const filter: FilterUserDto = { query };
     
     const users = await this.usersService.findAll(filter);
@@ -54,34 +49,24 @@ export class UsersController {
     }));
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @Get('profile')
-  async getOne(
-    @Req() req: Request & { user?: { userId: number } },
-  ): Promise<FullUserDto | null> {
-    const userId = req.user?.userId;
-    if (!userId || isNaN(Number(userId))) {
-      throw new BadRequestException('Invalid or missing user id in JWT');
-    }
+  async getOne(@CurrentUser() userId: number): Promise<FullUserDto> {
     const user = await this.usersService.findOne(userId);
-
     const expensesCount = await this.expensesService.getExpenseCountForUser(userId);
-    return user
-      ? {
-          ...user,
-          imagePath: user.imagePath
-            ? this.storage.getPublicUrl(user.imagePath)
-            : undefined,
-          expensesCount,
-        }
-      : null;
+    
+    return {
+      ...user,
+      imagePath: user.imagePath ? this.storage.getPublicUrl(user.imagePath) : undefined,
+      expensesCount,
+    } as FullUserDto;
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   @Patch()
   async update(
-    @Req() req: Request & { user?: { userId: number } },
+    @CurrentUser() userId: number,
     @Body(ValidationPipe) user: UpdateUserDto,
     @UploadedFile(
       new ParseFilePipe({
@@ -93,38 +78,28 @@ export class UsersController {
       })
     ) file?: Express.Multer.File
   ) {
-    const userId = req.user?.userId;
-    if (!userId || isNaN(Number(userId))) {
-      throw new BadRequestException('Invalid or missing user id in JWT');
-    }
-
-    if(file){
-      const {path} = await this.storage.uploadUserAvatar(userId, file);
+    if (file) {
+      const { path } = await this.storage.uploadUserAvatar(userId, file);
       await this.usersService.updateAvatar(userId, path);
     }
 
     return this.usersService.update(userId, user);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   @Post('avatar')
   async getUserAvatar(
-    @Req() req: Request & { user?: { userId: number } },
+    @CurrentUser() userId: number,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    const userId = req.user?.userId;
-    if (!userId || isNaN(Number(userId))) {
-      throw new BadRequestException(
-        'You have to be logged in to upload an avatar',
-      );
-    }
     if (!file) {
       throw new BadRequestException('No file provided');
     }
+    
     const { path, url } = await this.storage.uploadUserAvatar(userId, file);
     await this.usersService.updateAvatar(userId, path);
-    //! add a dto to return image path and url
+    
     return { image_path: path, image_url: url };
   }
 }

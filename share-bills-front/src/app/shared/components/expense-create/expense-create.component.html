@@ -5,7 +5,6 @@
     <app-form #f="appForm" [form]="form"
       [submitLabel]="loading ? 'Creating…' : (type() === 'transfer' ? 'Send transfer' : 'Add expense')"
       [loading]="loading" (formSubmit)="onSubmit()" (formCancel)="onCancel()">
-      <!-- Type switch -->
       <div class="row type-switch">
         <button type="button" class="chip" [class.active]="type() === 'expense'"
           (click)="setType('expense')">
@@ -17,16 +16,21 @@
         </button>
       </div>
 
-      <!-- Title -->
       <app-input-field label="Title" type="text" [required]="true" [submitted]="f.submitted"
         [placeholder]="'e.g. Groceries, Rent, Coffee…'" [value]="form.controls.title.value ?? ''"
         (valueChange)="onInputString('title', $event)">
       </app-input-field>
 
       <!-- Amount -->
-      <app-input-field label="Amount" type="number" [required]="true" [submitted]="f.submitted" [placeholder]="'0.00'"
-        [value]="form.controls.amount.value ?? 0" (valueChange)="onInputNumber('amount', $event)">
-      </app-input-field>
+      <div class="amount-section">
+        <app-input-field label="Amount" type="number" [required]="true" [submitted]="f.submitted" [placeholder]="'0.00'"
+          [value]="form.controls.amount.value ?? 0" (valueChange)="onInputNumber('amount', $event)">
+        </app-input-field>
+        <div class="currency-display">
+          <span class="currency-label">Currency:</span>
+          <span class="currency-code">{{ group.baseCurrencyCode }}</span>
+        </div>
+      </div>
 
 
       <!-- Member selection -->
@@ -37,7 +41,7 @@
             <input #cb type="checkbox" [checked]="selectedMember?.id === m.id"
               (change)="onToggleMember(m, cb.checked)" />
             <span class="avatar">
-              <img [src]="m.user.imagePath ? m.user.imagePath : 'assets/avatar-placeholder.webp'" alt="" />
+              <img [src]="m.user.imagePath ? m.user.imagePath : 'assets/avatar-placeholder.webp'" alt="" style="object-fit: cover; border-radius: 50%; aspect-ratio: 1;" />
             </span>
             <span class="name">{{ m.user.name }}</span>
 

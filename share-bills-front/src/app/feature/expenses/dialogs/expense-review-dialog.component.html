@@ -1,0 +1,45 @@
+<div class="expense-review-dialog">
+  <div class="dialog-header">
+    <h2 mat-dialog-title class="dialog-title">Review Expense</h2>
+    <div class="countdown" *ngIf="remaining$ | async as r">
+      <span class="countdown-label">Time remaining:</span>
+      <span class="countdown-time">{{r}}s</span>
+    </div>
+  </div>
+  
+  <mat-dialog-content class="dialog-content">
+    <div class="expense-card">
+      <div class="expense-header">
+        <h3 class="expense-title">{{data.event.expense.title}}</h3>
+        <div class="expense-amount">{{formatCurrency(data.event.expense.amount)}}</div>
+      </div>
+      
+      <div class="expense-details">
+        <div class="detail-item">
+          <span class="detail-label">Group:</span>
+          <span class="detail-value">{{data.event.groupName}}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Paid by:</span>
+          <span class="detail-value">{{data.event.paidByName}}</span>
+        </div>
+      </div>
+    </div>
+  </mat-dialog-content>
+  
+  <mat-dialog-actions align="end" class="dialog-actions">
+    <button mat-stroked-button 
+            class="action-button reject-button" 
+            (click)="vote('declined')" 
+            [disabled]="loading">
+      <span class="button-text">Reject</span>
+    </button>
+    <button mat-flat-button 
+            class="action-button accept-button" 
+            (click)="vote('accepted')" 
+            [disabled]="loading">
+      <span class="button-text">Accept</span>
+    </button>
+  </mat-dialog-actions>
+</div>
+

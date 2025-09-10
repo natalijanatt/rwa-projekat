@@ -5,7 +5,6 @@
   color: #ffffff;
 }
 
-/* Page Header */
 .page-header {
   margin-bottom: 2rem;
   text-align: center;
@@ -28,7 +27,6 @@
   }
 }
 
-/* Actions Section */
 .actions-section {
   display: flex;
   justify-content: center;
@@ -63,14 +61,12 @@
   }
 }
 
-/* Content Section */
 .content-section {
   display: flex;
   flex-direction: column;
   gap: 2rem;
 }
 
-/* Summary Section */
 .summary-section {
   display: flex;
   justify-content: center;
@@ -113,11 +109,13 @@
   }
 }
 
-/* Expenses List */
 .expenses-list {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   gap: 1rem;
+  align-items: center;
+  justify-content: center;
 }
 
 .expense-item {
@@ -156,7 +154,6 @@
   }
 }
 
-/* Expense Header */
 .expense-header {
   display: flex;
   justify-content: space-between;
@@ -212,7 +209,6 @@
   }
 }
 
-/* Expense Details */
 .expense-details {
   margin-bottom: 1.5rem;
 }
@@ -268,7 +264,6 @@
   }
 }
 
-/* Expense Actions */
 .expense-actions {
   display: flex;
   gap: 0.75rem;
@@ -326,7 +321,6 @@
   }
 }
 
-/* Empty State */
 .empty-state {
   text-align: center;
   padding: 4rem 2rem;
@@ -382,7 +376,6 @@
   }
 }
 
-/* Loading State */
 .loading-state {
   text-align: center;
   padding: 4rem 2rem;
@@ -411,7 +404,6 @@
   }
 }
 
-/* Error State */
 .error-state {
   text-align: center;
   padding: 4rem 2rem;
@@ -467,12 +459,10 @@
   }
 }
 
-/* Animations */
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .expenses-page {
     padding: 1rem;

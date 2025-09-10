@@ -89,6 +89,41 @@ app-form {
   gap: 1.25rem;
 }
 
+/* Amount Section */
+.amount-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.currency-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 127, 159, 0.05);
+  border: 1px solid rgba(0, 127, 159, 0.2);
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  
+  .currency-label {
+    font-size: 0.875rem;
+    color: #adb5bd;
+    font-weight: 500;
+  }
+  
+  .currency-code {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #007F9F;
+    background: linear-gradient(135deg, #007F9F, #6f42c1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 1px;
+  }
+}
+
 /* Section Styling */
 .section {
   background: rgba(0, 127, 159, 0.05);
@@ -269,6 +304,18 @@ app-form {
       font-size: 0.85rem;
     }
   }
+  
+  .currency-display {
+    padding: 0.625rem 0.875rem;
+    
+    .currency-label {
+      font-size: 0.8rem;
+    }
+    
+    .currency-code {
+      font-size: 0.9rem;
+    }
+  }
 }
 
 @media (max-width: 480px) {
@@ -298,6 +345,18 @@ app-form {
     
     .name {
       font-size: 0.8rem;
+    }
+  }
+  
+  .currency-display {
+    padding: 0.5rem 0.75rem;
+    
+    .currency-label {
+      font-size: 0.75rem;
+    }
+    
+    .currency-code {
+      font-size: 0.85rem;
     }
   }
 }

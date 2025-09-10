@@ -3,13 +3,13 @@
     <div class="toolbar">
       <a [routerLink]="['/groups', exp.groupId]" class="back-link">← Back to group</a>
       <span class="status" [ngClass]="{ finalized: exp.finalizedAt, pending: !exp.finalizedAt }">
-        {{ exp.finalizedAt ? 'Finalized' : 'Pending' }}
+        {{ exp.finalizedAt ? 'Completed' : 'Pending' }}
       </span>
     </div>
 
     <header class="header">
       <h1 class="title">{{ exp.title }}</h1>
-      <div class="amount">{{ exp.amount | currency }}</div>
+      <div class="amount">{{ formatCurrency(exp.amount, exp.group.baseCurrencyCode) }}</div>
     </header>
 
     <section class="meta grid">
@@ -33,7 +33,7 @@
       <div class="item">
         <div class="label">Paid by</div>
         <div class="value person">
-          <img class="avatar" [src]="exp.paidBy.user.imagePath || 'assets/avatar-placeholder.webp'" alt="" />
+          <img class="avatar" [src]="exp.paidBy.user.imagePath || 'assets/avatar-placeholder.webp'" alt="" style="object-fit: cover; border-radius: 50%; aspect-ratio: 1;" />
           <span>{{ exp.paidBy.user.name || ('Member #' + exp.paidById) }}</span>
         </div>
       </div>
@@ -41,7 +41,6 @@
       <div class="item" *ngIf="exp.paidToId">
         <div class="label">Paid to</div>
         <div class="value person">
-          <!-- If you have paidTo in the DTO later, reflect it here -->
           <span>Member #{{ exp.paidToId }}</span>
         </div>
       </div>
@@ -54,7 +53,7 @@
 
       <div class="list" *ngIf="exp.participants?.length; else noParticipants">
         <div class="participant" *ngFor="let m of exp.participants; trackBy: trackByMember">
-          <img class="avatar" [src]="m?.user?.imagePath || 'assets/avatar-placeholder.webp'" alt="" />
+          <img class="avatar" [src]="m?.user?.imagePath || 'assets/avatar-placeholder.webp'" alt="" style="object-fit: cover; border-radius: 50%; aspect-ratio: 1;" />
           <div class="info">
             <div class="name">{{ m?.user?.name || ('Member #' + m?.id) }}</div>
             <div class="sub">{{ m?.user?.email }}</div>
@@ -66,7 +65,7 @@
       <p class="muted">No accepted participants yet.</p>
     </ng-template>
     <div class="actions" *ngIf="!participated()">
-      <p>If you decide to participate, it will cost you {{exp.amount/(exp.participantsCount+1) | currency}}</p>
+      <p>If you decide to participate, it will cost you {{ formatCurrency(exp.amount/(exp.participantsCount+1), exp.group.baseCurrencyCode) }}</p>
       <app-button [label]="'Accept'" (clicked)="handleExpense('accepted')" class="btn btn-secondary"/>
       <app-button [label]="'Reject'" (clicked)="handleExpense('declined')" variant="danger" class="btn btn-primary"/>
     </div>

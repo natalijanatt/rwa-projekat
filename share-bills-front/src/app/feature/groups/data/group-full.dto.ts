@@ -6,6 +6,7 @@ export interface GroupFullDto {
   id: number;
   name: string;
   imagePath?:string;
+  baseCurrencyCode: string;
   owner: UserBaseDto;
   members: GroupMemberBaseDto[];
   balances: GroupMemberBalanceBaseDto[];

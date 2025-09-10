@@ -8,6 +8,7 @@ export class FullGroupDto {
   name: string;
   imagePath?:string;
   owner: BaseUserDto;
+  baseCurrencyCode: string;
   members: BaseGroupMemberDto[];
   balances: BaseGroupMemberBalanceDto[];
 
@@ -15,6 +16,7 @@ export class FullGroupDto {
     this.id = entity.id;
     this.name = entity.name;
     this.owner = entity.owner;
+    this.baseCurrencyCode = entity.baseCurrencyCode;
     this.imagePath = entity.imagePath;
     this.members = entity.members?.map(member => new BaseGroupMemberDto(member)) || [];
     this.balances = entity.balances?.map(balance => new BaseGroupMemberBalanceDto(balance)) || [];

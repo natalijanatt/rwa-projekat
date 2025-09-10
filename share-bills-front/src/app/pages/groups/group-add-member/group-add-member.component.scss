@@ -58,7 +58,6 @@
   width: 100%;
 }
 
-/* Search Field Styling */
 ::ng-deep .outline-purple {
   --mdc-outlined-text-field-outline-color: #007F9F;
   --mdc-outlined-text-field-hover-outline-color: #007F9F;
@@ -94,7 +93,6 @@
   }
 }
 
-/* Spinner Styling */
 .spinner {
   display: flex;
   align-items: center;
@@ -110,7 +108,6 @@
   }
 }
 
-/* List Styling */
 ::ng-deep .mat-mdc-nav-list {
   background: rgba(0, 127, 159, 0.05);
   border-radius: 12px;
@@ -140,7 +137,6 @@
       z-index: 2;
     }
     
-    /* Selected member highlighting */
     &.selected-member,
     &.mat-mdc-list-item-selected,
     &[aria-selected="true"] {
@@ -187,7 +183,6 @@
   }
 }
 
-/* Animation for check icon */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -199,7 +194,6 @@
   }
 }
 
-/* No Results */
 .muted {
   color: #adb5bd;
   font-size: 0.8rem;
@@ -211,7 +205,6 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Error Styling */
 .error {
   color: #dc3545;
   margin-top: 0.875rem;
@@ -223,7 +216,6 @@
   font-size: 0.8rem;
 }
 
-/* Actions */
 .actions {
   display: flex;
   justify-content: flex-end;
@@ -231,7 +223,7 @@
   padding-top: 1.25rem;
   border-top: 1px solid #404040;
   margin-top: 1rem;
-  background: rgba(255, 0, 0, 0.1); /* Debug: Red background to see the container */
+  background: rgba(255, 0, 0, 0.1);
   padding: 1rem;
   border-radius: 8px;
   position: relative;
@@ -289,7 +281,6 @@
   }
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .group-add-member-page {
     padding: 0.75rem;
